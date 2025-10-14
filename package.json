@@ -1,0 +1,70 @@
+{
+  "name": "ai-observer",
+  "displayName": "AI Observer",
+  "description": "Intelligent analytics for GitHub Copilot interactions",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Data Science",
+    "Visualization"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-observer.toggleLogging",
+        "title": "AI Observer: Toggle Logging"
+      },
+      {
+        "command": "ai-observer.viewDashboard",
+        "title": "AI Observer: View Dashboard"
+      },
+      {
+        "command": "ai-observer.exportLogs",
+        "title": "AI Observer: Export Logs"
+      },
+      {
+        "command": "ai-observer.clearLogs",
+        "title": "AI Observer: Clear Logs"
+      }
+    ],
+    "configuration": {
+      "title": "AI Observer",
+      "properties": {
+        "aiObserver.enableLogging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable automatic logging of Copilot interactions"
+        },
+        "aiObserver.storageLimit": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum number of interactions to store"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.22.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
