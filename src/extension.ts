@@ -3,7 +3,10 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { EventBus } from './core/EventBus';
 import { StorageManager } from './core/StorageManager';
+import { CopilotAdapter } from './adapters/CopilotAdapter';
 import { AIInteraction } from './types';
+
+let copilotAdapter: CopilotAdapter | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('AI Observer is activating...');
@@ -13,6 +16,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Create the storage manager responsible for persisting interactions.
   const storage = new StorageManager(context.globalStorageUri.fsPath);
+
+  // Adapter responsible for detecting GitHub Copilot activity. It stays dormant
+  // until logging is enabled via settings or the toggle command.
+  copilotAdapter = new CopilotAdapter(eventBus);
 
   const interactionListener = async (data: AIInteraction) => {
     await storage.saveInteraction(data);
@@ -102,11 +109,56 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
-  context.subscriptions.push(testCmd, exportLogsCmd, clearLogsCmd, addTestDataCmd);
+  const toggleLoggingCmd = vscode.commands.registerCommand(
+    'ai-observer.toggleLogging',
+    async () => {
+      const config = vscode.workspace.getConfiguration('aiObserver');
+      const current = config.get<boolean>('enableLogging', true);
+      await config.update('enableLogging', !current, vscode.ConfigurationTarget.Global);
+
+      if (!current && copilotAdapter) {
+        copilotAdapter.start();
+        vscode.window.showInformationMessage('AI Observer logging enabled');
+      } else if (copilotAdapter) {
+        copilotAdapter.stop();
+        vscode.window.showInformationMessage('AI Observer logging disabled');
+      }
+    },
+  );
+
+  const adapterStatsCmd = vscode.commands.registerCommand('ai-observer.adapterStats', () => {
+    if (!copilotAdapter) {
+      vscode.window.showWarningMessage('Copilot adapter not initialised');
+      return;
+    }
+
+    const stats = copilotAdapter.getStats();
+    vscode.window.showInformationMessage(
+      `Adapter running: ${stats.running}, Pending: ${stats.pendingSuggestions}`,
+    );
+  });
+
+  context.subscriptions.push(
+    testCmd,
+    exportLogsCmd,
+    clearLogsCmd,
+    addTestDataCmd,
+    toggleLoggingCmd,
+    adapterStatsCmd,
+  );
+
+  const config = vscode.workspace.getConfiguration('aiObserver');
+  if (config.get<boolean>('enableLogging', true) && copilotAdapter) {
+    copilotAdapter.start();
+  }
 
   console.log('AI Observer activated successfully');
 }
 
 export function deactivate() {
+  if (copilotAdapter) {
+    copilotAdapter.stop();
+    copilotAdapter = null;
+  }
   console.log('AI Observer deactivated');
 }

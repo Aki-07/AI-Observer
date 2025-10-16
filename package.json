@@ -41,6 +41,10 @@
       {
         "command": "ai-observer.addTestData",
         "title": "AI Observer: Add Test Data"
+      },
+      {
+        "command": "ai-observer.adapterStats",
+        "title": "AI Observer: Show Adapter Stats"
       }
     ],
     "configuration": {
