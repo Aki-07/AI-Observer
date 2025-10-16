@@ -20,19 +20,48 @@ export function activate(context: vscode.ExtensionContext) {
 
   const dashboardProvider = new DashboardProvider(context.extensionUri, storage);
 
+  // Track whether logging is currently enabled via configuration.
+  const configuration = vscode.workspace.getConfiguration();
+  let loggingEnabled = configuration.get<boolean>('aiObserver.enableLogging', true);
+
+  const configurationListener = vscode.workspace.onDidChangeConfiguration((event) => {
+    if (event.affectsConfiguration('aiObserver.enableLogging')) {
+      loggingEnabled = configuration.get<boolean>('aiObserver.enableLogging', true);
+    }
+  });
+
   const interactionListener = async (data: AIInteraction) => {
+    if (!loggingEnabled) {
+      console.log('AI Observer logging disabled. Skipping interaction capture.');
+      return;
+    }
+
     await storage.saveInteraction(data);
     dashboardProvider.refresh();
   };
   eventBus.on('interaction', interactionListener);
   context.subscriptions.push(
     new vscode.Disposable(() => eventBus.off('interaction', interactionListener)),
+    configurationListener,
   );
 
   // Test command to verify extension works
   const testCmd = vscode.commands.registerCommand('ai-observer.test', () => {
     vscode.window.showInformationMessage('AI Observer is working!');
   });
+
+  const toggleLoggingCmd = vscode.commands.registerCommand(
+    'ai-observer.toggleLogging',
+    async () => {
+      const next = !configuration.get<boolean>('aiObserver.enableLogging', true);
+
+      await configuration.update('aiObserver.enableLogging', next, vscode.ConfigurationTarget.Global);
+
+      loggingEnabled = next;
+      const status = next ? 'enabled' : 'disabled';
+      vscode.window.showInformationMessage(`AI Observer logging ${status}.`);
+    },
+  );
 
   const viewDashboardCmd = vscode.commands.registerCommand('ai-observer.viewDashboard', () => {
     dashboardProvider.show();
@@ -114,7 +143,14 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
-  context.subscriptions.push(testCmd, viewDashboardCmd, exportLogsCmd, clearLogsCmd, addTestDataCmd);
+  context.subscriptions.push(
+    testCmd,
+    toggleLoggingCmd,
+    viewDashboardCmd,
+    exportLogsCmd,
+    clearLogsCmd,
+    addTestDataCmd,
+  );
 
   console.log('AI Observer activated successfully');
 }
