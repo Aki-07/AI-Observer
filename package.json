@@ -37,6 +37,10 @@
       {
         "command": "ai-observer.clearLogs",
         "title": "AI Observer: Clear Logs"
+      },
+      {
+        "command": "ai-observer.addTestData",
+        "title": "AI Observer: Add Test Data"
       }
     ],
     "configuration": {
