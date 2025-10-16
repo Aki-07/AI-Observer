@@ -12,6 +12,7 @@ export class StorageManager {
   private storagePath: string;
   private interactions: AIInteraction[];
   private maxInteractions: number;
+  private loadPromise: Promise<void>;
 
   /**
    * Construct a new storage manager instance.
@@ -23,10 +24,18 @@ export class StorageManager {
     this.interactions = [];
     this.maxInteractions = 10000;
 
-    // Kick off the initial load. Errors are handled within the load method so
-    // we intentionally do not await the promise here to avoid blocking
-    // activation.
-    void this.load();
+    // Kick off the initial load immediately and cache the promise so other
+    // operations can await completion when necessary. This prevents race
+    // conditions where writes occur before the asynchronous load populates the
+    // in-memory cache.
+    this.loadPromise = this.load();
+  }
+
+  /**
+   * Ensure the storage file has been read before mutating operations run.
+   */
+  private async ensureLoaded(): Promise<void> {
+    await this.loadPromise;
   }
 
   /**
@@ -90,6 +99,8 @@ export class StorageManager {
    * @param interaction - Interaction that should be stored.
    */
   public async saveInteraction(interaction: AIInteraction): Promise<void> {
+    await this.ensureLoaded();
+
     this.interactions.push(interaction);
 
     if (this.interactions.length > this.maxInteractions) {
@@ -201,6 +212,7 @@ export class StorageManager {
     const ext = path.extname(filePath).toLowerCase();
 
     try {
+      await this.ensureLoaded();
       await fs.mkdir(path.dirname(filePath), { recursive: true });
 
       if (ext === '.json') {
@@ -234,6 +246,7 @@ export class StorageManager {
    * Remove all stored interactions from memory and persist the empty state.
    */
   public async clearLogs(): Promise<void> {
+    await this.ensureLoaded();
     this.interactions = [];
     await this.save();
   }
