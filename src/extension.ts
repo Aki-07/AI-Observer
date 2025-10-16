@@ -20,15 +20,35 @@ export function activate(context: vscode.ExtensionContext) {
 
   const dashboardProvider = new DashboardProvider(context.extensionUri, storage);
 
+  copilotAdapter = new CopilotAdapter(eventBus);
+
   // Track whether logging is currently enabled via configuration.
-  const configuration = vscode.workspace.getConfiguration();
-  let loggingEnabled = configuration.get<boolean>('aiObserver.enableLogging', true);
+  const configuration = vscode.workspace.getConfiguration('aiObserver');
+  let loggingEnabled = configuration.get<boolean>('enableLogging', true);
+
+  const applyLoggingState = (enabled: boolean, options: { notify?: boolean } = {}) => {
+    loggingEnabled = enabled;
+    if (copilotAdapter) {
+      if (enabled) {
+        copilotAdapter.start();
+      } else {
+        copilotAdapter.stop();
+      }
+    }
+
+    if (options.notify) {
+      const status = enabled ? 'enabled' : 'disabled';
+      vscode.window.showInformationMessage(`AI Observer logging ${status}.`);
+    }
+  };
 
   const configurationListener = vscode.workspace.onDidChangeConfiguration((event) => {
     if (event.affectsConfiguration('aiObserver.enableLogging')) {
-      loggingEnabled = configuration.get<boolean>('aiObserver.enableLogging', true);
+      applyLoggingState(configuration.get<boolean>('enableLogging', true) ?? true);
     }
   });
+
+  applyLoggingState(loggingEnabled);
 
   const interactionListener = async (data: AIInteraction) => {
     if (!loggingEnabled) {
@@ -53,13 +73,11 @@ export function activate(context: vscode.ExtensionContext) {
   const toggleLoggingCmd = vscode.commands.registerCommand(
     'ai-observer.toggleLogging',
     async () => {
-      const next = !configuration.get<boolean>('aiObserver.enableLogging', true);
+      const next = !configuration.get<boolean>('enableLogging', true);
 
-      await configuration.update('aiObserver.enableLogging', next, vscode.ConfigurationTarget.Global);
+      await configuration.update('enableLogging', next, vscode.ConfigurationTarget.Global);
 
-      loggingEnabled = next;
-      const status = next ? 'enabled' : 'disabled';
-      vscode.window.showInformationMessage(`AI Observer logging ${status}.`);
+      applyLoggingState(next, { notify: true });
     },
   );
 
@@ -143,6 +161,18 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
+  const adapterStatsCmd = vscode.commands.registerCommand('ai-observer.adapterStats', () => {
+    if (!copilotAdapter) {
+      vscode.window.showWarningMessage('Copilot adapter not initialised');
+      return;
+    }
+
+    const stats = copilotAdapter.getStats();
+    vscode.window.showInformationMessage(
+      `Adapter running: ${stats.running}, Pending: ${stats.pendingSuggestions}`,
+    );
+  });
+
   context.subscriptions.push(
     testCmd,
     toggleLoggingCmd,
@@ -150,6 +180,7 @@ export function activate(context: vscode.ExtensionContext) {
     exportLogsCmd,
     clearLogsCmd,
     addTestDataCmd,
+    adapterStatsCmd,
   );
 
   console.log('AI Observer activated successfully');
