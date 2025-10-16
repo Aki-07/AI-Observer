@@ -19,6 +19,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "ai-observer.test",
+        "title": "AI Observer: Test"
+      },
+      {
         "command": "ai-observer.toggleLogging",
         "title": "AI Observer: Toggle Logging"
       },
