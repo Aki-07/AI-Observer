@@ -5,6 +5,7 @@ import { EventBus } from './core/EventBus';
 import { StorageManager } from './core/StorageManager';
 import { CopilotAdapter } from './adapters/CopilotAdapter';
 import { AIInteraction } from './types';
+import { DashboardProvider } from './dashboard/DashboardProvider';
 
 let copilotAdapter: CopilotAdapter | null = null;
 
@@ -17,12 +18,11 @@ export function activate(context: vscode.ExtensionContext) {
   // Create the storage manager responsible for persisting interactions.
   const storage = new StorageManager(context.globalStorageUri.fsPath);
 
-  // Adapter responsible for detecting GitHub Copilot activity. It stays dormant
-  // until logging is enabled via settings or the toggle command.
-  copilotAdapter = new CopilotAdapter(eventBus);
+  const dashboardProvider = new DashboardProvider(context.extensionUri, storage);
 
   const interactionListener = async (data: AIInteraction) => {
     await storage.saveInteraction(data);
+    dashboardProvider.refresh();
   };
   eventBus.on('interaction', interactionListener);
   context.subscriptions.push(
@@ -32,6 +32,10 @@ export function activate(context: vscode.ExtensionContext) {
   // Test command to verify extension works
   const testCmd = vscode.commands.registerCommand('ai-observer.test', () => {
     vscode.window.showInformationMessage('AI Observer is working!');
+  });
+
+  const viewDashboardCmd = vscode.commands.registerCommand('ai-observer.viewDashboard', () => {
+    dashboardProvider.show();
   });
 
   const exportLogsCmd = vscode.commands.registerCommand(
@@ -73,6 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       await storage.clearLogs();
+      dashboardProvider.refresh();
       vscode.window.showInformationMessage('AI Observer logs cleared');
     },
   );
@@ -109,48 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
-  const toggleLoggingCmd = vscode.commands.registerCommand(
-    'ai-observer.toggleLogging',
-    async () => {
-      const config = vscode.workspace.getConfiguration('aiObserver');
-      const current = config.get<boolean>('enableLogging', true);
-      await config.update('enableLogging', !current, vscode.ConfigurationTarget.Global);
-
-      if (!current && copilotAdapter) {
-        copilotAdapter.start();
-        vscode.window.showInformationMessage('AI Observer logging enabled');
-      } else if (copilotAdapter) {
-        copilotAdapter.stop();
-        vscode.window.showInformationMessage('AI Observer logging disabled');
-      }
-    },
-  );
-
-  const adapterStatsCmd = vscode.commands.registerCommand('ai-observer.adapterStats', () => {
-    if (!copilotAdapter) {
-      vscode.window.showWarningMessage('Copilot adapter not initialised');
-      return;
-    }
-
-    const stats = copilotAdapter.getStats();
-    vscode.window.showInformationMessage(
-      `Adapter running: ${stats.running}, Pending: ${stats.pendingSuggestions}`,
-    );
-  });
-
-  context.subscriptions.push(
-    testCmd,
-    exportLogsCmd,
-    clearLogsCmd,
-    addTestDataCmd,
-    toggleLoggingCmd,
-    adapterStatsCmd,
-  );
-
-  const config = vscode.workspace.getConfiguration('aiObserver');
-  if (config.get<boolean>('enableLogging', true) && copilotAdapter) {
-    copilotAdapter.start();
-  }
+  context.subscriptions.push(testCmd, viewDashboardCmd, exportLogsCmd, clearLogsCmd, addTestDataCmd);
 
   console.log('AI Observer activated successfully');
 }
