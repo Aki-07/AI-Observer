@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const storage = new StorageManager(context.globalStorageUri.fsPath);
 
-  const dashboardProvider = new DashboardProvider(context.extensionUri, storage);
+  const dashboardProvider = new DashboardProvider(context.extensionUri, storage, eventBus);
 
   copilotAdapter = new CopilotAdapter(eventBus);
 

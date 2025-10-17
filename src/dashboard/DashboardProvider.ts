@@ -1,7 +1,8 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { StorageManager } from '../core/StorageManager';
+import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
+import { EventBus } from "../core/EventBus";
+import { StorageManager } from "../core/StorageManager";
 
 /**
  * Hosts the dashboard webview inside VS Code and keeps it synchronised with
@@ -13,9 +14,11 @@ export class DashboardProvider {
   private readonly storage: StorageManager;
   private updateInterval: NodeJS.Timeout | undefined;
 
-  constructor(extensionUri: vscode.Uri, storage: StorageManager) {
+  constructor(extensionUri: vscode.Uri, storage: StorageManager, eventBus: EventBus) {
     this.extensionUri = extensionUri;
     this.storage = storage;
+
+    eventBus.on('interaction', () => this.refresh());
   }
 
   /**
@@ -29,29 +32,29 @@ export class DashboardProvider {
     }
 
     this.panel = vscode.window.createWebviewPanel(
-      'aiObserverDashboard',
-      '✨ AI Observer Dashboard',
+      "aiObserverDashboard",
+      "✨ AI Observer Dashboard",
       vscode.ViewColumn.Two,
       {
         enableScripts: true,
         retainContextWhenHidden: true,
         localResourceRoots: [this.extensionUri],
-      },
+      }
     );
 
     this.panel.webview.html = this.getHtmlContent();
 
     this.panel.webview.onDidReceiveMessage(async (msg) => {
       try {
-        if (msg?.type === 'refresh') {
+        if (msg?.type === "refresh") {
           this.updateData();
-        } else if (msg?.type === 'export') {
-          await vscode.commands.executeCommand('ai-observer.exportLogs');
-        } else if (msg?.type === 'clear') {
-          await vscode.commands.executeCommand('ai-observer.clearLogs');
+        } else if (msg?.type === "export") {
+          await vscode.commands.executeCommand("ai-observer.exportLogs");
+        } else if (msg?.type === "clear") {
+          await vscode.commands.executeCommand("ai-observer.clearLogs");
         }
       } catch (error) {
-        console.error('Failed to handle dashboard message', error);
+        console.error("Failed to handle dashboard message", error);
       }
     });
 
@@ -81,14 +84,14 @@ export class DashboardProvider {
       const interactions = this.storage.getInteractions();
 
       this.panel.webview.postMessage({
-        type: 'update',
+        type: "update",
         data: {
           analytics,
           recentInteractions: interactions.slice(-20).reverse(),
         },
       });
     } catch (error) {
-      console.error('Failed to update dashboard data', error);
+      console.error("Failed to update dashboard data", error);
     }
   }
 
@@ -97,14 +100,19 @@ export class DashboardProvider {
    * webview environment.
    */
   private getHtmlContent(): string {
-    const htmlPath = path.join(this.extensionUri.fsPath, 'src', 'dashboard', 'dashboard.html');
+    const htmlPath = path.join(
+      this.extensionUri.fsPath,
+      "src",
+      "dashboard",
+      "dashboard.html"
+    );
 
     try {
       const nonce = this.getNonce();
-      const rawHtml = fs.readFileSync(htmlPath, 'utf-8');
+      const rawHtml = fs.readFileSync(htmlPath, "utf-8");
       return rawHtml.replace(/\$\{nonce\}/g, nonce);
     } catch (error) {
-      console.error('Unable to load dashboard HTML', error);
+      console.error("Unable to load dashboard HTML", error);
       const errorMessage = `Failed to load dashboard UI. Check the developer console for details.`;
       return `<!DOCTYPE html><html lang="en"><body><h1>${errorMessage}</h1></body></html>`;
     }
@@ -114,8 +122,9 @@ export class DashboardProvider {
    * Generate a cryptographically random nonce for use inside the CSP.
    */
   private getNonce(): string {
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let text = '';
+    const possible =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let text = "";
     for (let i = 0; i < 32; i += 1) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
@@ -129,5 +138,21 @@ export class DashboardProvider {
     if (this.panel) {
       this.updateData();
     }
+  }
+
+  public getTotalInteractions(): number {
+    return this.storage.getInteractions().length;
+  }
+
+  public getInteractionsPerLanguage(): Map<string, number> {
+    const interactions = this.storage.getInteractions();
+    const languageCounts = new Map<string, number>();
+
+    for (const interaction of interactions) {
+      const existing = languageCounts.get(interaction.language) ?? 0;
+      languageCounts.set(interaction.language, existing + 1);
+    }
+
+    return languageCounts;
   }
 }

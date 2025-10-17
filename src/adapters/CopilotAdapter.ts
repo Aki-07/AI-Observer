@@ -60,6 +60,17 @@ export class CopilotAdapter {
       vscode.window.onDidChangeActiveTextEditor(this.onEditorChange.bind(this)),
     );
 
+    const copilotChatExt = vscode.extensions.getExtension('GitHub.copilot-chat');
+    if (copilotChatExt) {
+      this.disposables.push(
+        vscode.commands.registerCommand('markdown.api.render', (text: string) => {
+          this.onChatResponse(text);
+          return vscode.commands.executeCommand('markdown.api.render', text);
+        }),
+      );
+      console.log('Copilot Chat extension detected, chat monitoring enabled');
+    }
+
     console.log('CopilotAdapter started');
   }
 
@@ -225,6 +236,41 @@ export class CopilotAdapter {
   }
 
   /**
+   * Process a captured chat response and emit an interaction event.
+   */
+  private async onChatResponse(text: string): Promise<void> {
+    if (!this.isRunning || !text || text.trim().length === 0) {
+      return;
+    }
+
+    // Heuristic: The "markdown.api.render" command is triggered for all markdown
+    // rendering, so we need to filter out events that are not from Copilot Chat.
+    // We assume that chat responses are typically long and contain code blocks.
+    if (text.length < 100 && !text.includes('```')) {
+      return;
+    }
+
+    const interaction: AIInteraction = {
+      id: randomUUID(),
+      timestamp: Date.now(),
+      type: 'chat',
+      prompt: '', // We can't easily get the prompt, so leave it blank.
+      response: text,
+      language: 'markdown',
+      filePath: 'copilot-chat',
+      accepted: true,
+      latency: 0,
+      modelName: 'copilot-chat',
+      lineNumber: 0,
+      characterCount: text.length,
+    };
+
+    await this.eventBus.emit('interaction', interaction);
+    this.toggleLoggingAutomatically(true);
+    console.log(`Captured Copilot Chat interaction: ${interaction.id}`);
+  }
+
+  /**
    * Provide adapter status for debugging and quick diagnostics.
    */
   public getStats(): { running: boolean; pendingSuggestions: number } {
@@ -232,5 +278,16 @@ export class CopilotAdapter {
       running: this.isRunning,
       pendingSuggestions: this.pendingSuggestions.size,
     };
+  }
+
+  public toggleLoggingAutomatically(condition: boolean): void {
+    const config = vscode.workspace.getConfiguration('aiObserver');
+    const enableLogging = config.get<boolean>('enableLogging');
+
+    if (condition && !enableLogging) {
+        vscode.commands.executeCommand('ai-observer.toggleLogging');
+    } else if (!condition && enableLogging) {
+        vscode.commands.executeCommand('ai-observer.toggleLogging');
+    }
   }
 }

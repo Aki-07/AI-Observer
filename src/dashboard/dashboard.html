@@ -1,1207 +1,1392 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'none';
-    style-src 'unsafe-inline' https://cdnjs.cloudflare.com;
-    script-src 'nonce-${nonce}' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com;
-    img-src https: data:;">
-  <title>AI Observer Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none';
+    img-src https: data:;"
+    />
+    <title>AI Observer Dashboard</title>
+
+    <!-- External Libraries -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+      :root {
+        --bg-primary: #05070d;
+        --bg-secondary: rgba(17, 24, 39, 0.82);
+        --bg-glass: rgba(22, 27, 34, 0.7);
+        --border-color: rgba(148, 163, 184, 0.08);
+        --text-primary: #e6edf3;
+        --text-secondary: #8b949e;
+        --accent-blue: #58a6ff;
+        --accent-purple: #bc8cff;
+        --accent-green: #3fb950;
+        --accent-orange: #ffa657;
+        --accent-pink: #f472b6;
+        --gradient-1: linear-gradient(135deg, #58a6ff 0%, #bc8cff 100%);
+        --gradient-2: linear-gradient(135deg, #3fb950 0%, #58a6ff 100%);
+        --gradient-3: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --shadow-sm: 0 12px 30px rgba(10, 17, 40, 0.35);
+        --shadow-lg: 0 24px 60px rgba(5, 11, 25, 0.6);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Noto Sans", Helvetica, Arial, sans-serif;
+        background: radial-gradient(
+            circle at top left,
+            rgba(88, 166, 255, 0.08),
+            transparent 55%
+          ),
+          radial-gradient(
+            circle at 75% 20%,
+            rgba(188, 140, 255, 0.09),
+            transparent 60%
+          ),
+          radial-gradient(
+            circle at 20% 85%,
+            rgba(63, 185, 80, 0.12),
+            transparent 55%
+          ),
+          var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        line-height: 1.65;
+        overflow-x: hidden;
+        position: relative;
+        padding-bottom: 4rem;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+            120deg,
+            rgba(88, 166, 255, 0.15),
+            transparent 55%
+          ),
+          linear-gradient(300deg, rgba(188, 140, 255, 0.12), transparent 45%);
+        filter: blur(120px);
+        transform: translate3d(0, 0, 0);
+        z-index: -2;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 100 100" fill="none"%3E%3Cpath d="M0 100L100 0H0V100Z" fill="rgba(255,255,255,0.02)"/%3E%3C/svg%3E');
+        opacity: 0.25;
+        mix-blend-mode: soft-light;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .floating-orb {
+        position: fixed;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(88, 166, 255, 0.35),
+          transparent 60%
+        );
+        filter: blur(20px);
+        z-index: -3;
+        opacity: 0.5;
+      }
+
+      .floating-orb.orb-1 {
+        top: -120px;
+        left: -80px;
+        animation: float 18s ease-in-out infinite;
+      }
+      .floating-orb.orb-2 {
+        bottom: 120px;
+        right: -100px;
+        animation: float 24s ease-in-out infinite reverse;
+      }
+      .floating-orb.orb-3 {
+        top: 40%;
+        right: 15%;
+        background: radial-gradient(
+          circle,
+          rgba(188, 140, 255, 0.35),
+          transparent 65%
+        );
+        animation: float 22s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translate3d(0, 0, 0);
+        }
+        50% {
+          transform: translate3d(20px, -30px, 0);
+        }
+      }
 
-  <!-- External Libraries -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-  <style>
-    :root {
-      --bg-primary: #05070d;
-      --bg-secondary: rgba(17, 24, 39, 0.82);
-      --bg-glass: rgba(22, 27, 34, 0.7);
-      --border-color: rgba(148, 163, 184, 0.08);
-      --text-primary: #e6edf3;
-      --text-secondary: #8b949e;
-      --accent-blue: #58a6ff;
-      --accent-purple: #bc8cff;
-      --accent-green: #3fb950;
-      --accent-orange: #ffa657;
-      --accent-pink: #f472b6;
-      --gradient-1: linear-gradient(135deg, #58a6ff 0%, #bc8cff 100%);
-      --gradient-2: linear-gradient(135deg, #3fb950 0%, #58a6ff 100%);
-      --gradient-3: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --shadow-sm: 0 12px 30px rgba(10, 17, 40, 0.35);
-      --shadow-lg: 0 24px 60px rgba(5, 11, 25, 0.6);
-      --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at top left, rgba(88, 166, 255, 0.08), transparent 55%),
-        radial-gradient(circle at 75% 20%, rgba(188, 140, 255, 0.09), transparent 60%),
-        radial-gradient(circle at 20% 85%, rgba(63, 185, 80, 0.12), transparent 55%),
-        var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      line-height: 1.65;
-      overflow-x: hidden;
-      position: relative;
-      padding-bottom: 4rem;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(88, 166, 255, 0.15), transparent 55%),
-        linear-gradient(300deg, rgba(188, 140, 255, 0.12), transparent 45%);
-      filter: blur(120px);
-      transform: translate3d(0, 0, 0);
-      z-index: -2;
-    }
-
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 100 100" fill="none"%3E%3Cpath d="M0 100L100 0H0V100Z" fill="rgba(255,255,255,0.02)"/%3E%3C/svg%3E');
-      opacity: 0.25;
-      mix-blend-mode: soft-light;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .floating-orb {
-      position: fixed;
-      width: 320px;
-      height: 320px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(88, 166, 255, 0.35), transparent 60%);
-      filter: blur(20px);
-      z-index: -3;
-      opacity: 0.5;
-    }
-
-    .floating-orb.orb-1 { top: -120px; left: -80px; animation: float 18s ease-in-out infinite; }
-    .floating-orb.orb-2 { bottom: 120px; right: -100px; animation: float 24s ease-in-out infinite reverse; }
-    .floating-orb.orb-3 { top: 40%; right: 15%; background: radial-gradient(circle, rgba(188, 140, 255, 0.35), transparent 65%); animation: float 22s ease-in-out infinite; }
-
-    @keyframes float {
-      0%, 100% { transform: translate3d(0, 0, 0); }
-      50% { transform: translate3d(20px, -30px, 0); }
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(18px);
-      background: rgba(7, 10, 18, 0.85);
-      border-bottom: var(--glass-border);
-      box-shadow: var(--shadow-sm);
-      padding: 1.5rem 2rem;
-    }
-
-    .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 2rem;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-weight: 700;
-      font-size: 1.6rem;
-      letter-spacing: 0.02em;
-      color: white;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 25px rgba(88, 166, 255, 0.4);
-    }
-
-    .logo .accent-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent-green);
-      box-shadow: 0 0 15px rgba(63, 185, 80, 0.9);
-      animation: pulse 2.4s ease-in-out infinite;
-    }
-
-    .actions {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.75rem 1.4rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      letter-spacing: 0.01em;
-      border: none;
-      cursor: pointer;
-      color: var(--text-primary);
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease, background 0.35s ease;
-      backdrop-filter: blur(12px);
-      background: rgba(31, 41, 55, 0.65);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-
-    .btn i { width: 18px; height: 18px; opacity: 0.85; }
-
-    .btn:hover {
-      transform: translateY(-2px) scale(1.01);
-      box-shadow: 0 12px 30px rgba(88, 166, 255, 0.25);
-      border-color: rgba(88, 166, 255, 0.45);
-    }
-
-    .btn-primary {
-      background: linear-gradient(120deg, rgba(88, 166, 255, 0.9), rgba(188, 140, 255, 0.95));
-      color: #fff;
-      box-shadow: 0 15px 35px rgba(88, 166, 255, 0.35);
-    }
-
-    main {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2.5rem 2rem 3.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 3rem;
-    }
-
-    .intro-text {
-      display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-
-    .intro-heading {
-      font-size: 2rem;
-      font-weight: 700;
-      max-width: 640px;
-      background: linear-gradient(120deg, #f4f4f5, rgba(88, 166, 255, 0.75));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .intro-meta {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    .glow-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(88, 166, 255, 0.1);
-      border: 1px solid rgba(88, 166, 255, 0.35);
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent-blue);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.75rem;
-    }
-
-    .stat-card {
-      position: relative;
-      padding: 1.75rem;
-      border-radius: 20px;
-      background: var(--bg-glass);
-      border: var(--glass-border);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
-      isolation: isolate;
-    }
-
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(145deg, rgba(88, 166, 255, 0.12), transparent 40%);
-      opacity: 0;
-      transition: opacity 0.45s ease;
-      z-index: -1;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-6px) scale(1.01);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .stat-card:hover::before {
-      opacity: 1;
-    }
-
-    .stat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.1rem;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-secondary);
-    }
-
-    .stat-icon {
-      width: 24px;
-      height: 24px;
-      color: var(--accent-blue);
-      opacity: 0.75;
-    }
-
-    .stat-value {
-      font-size: 2.8rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.35rem;
-    }
-
-    .stat-subtext {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .trend-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      padding: 0.2rem 0.65rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: rgba(63, 185, 80, 0.18);
-      color: var(--accent-green);
-      border: 1px solid rgba(63, 185, 80, 0.4);
-    }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 2rem;
-    }
-
-    .chart-card {
-      background: var(--bg-glass);
-      border-radius: 24px;
-      padding: 2rem;
-      border: var(--glass-border);
-      box-shadow: var(--shadow-sm);
-      backdrop-filter: blur(16px);
-      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .chart-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(88, 166, 255, 0.12), transparent 55%);
-      opacity: 0;
-      transition: opacity 0.45s ease;
-      pointer-events: none;
-    }
-
-    .chart-card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .chart-card:hover::after {
-      opacity: 1;
-    }
-
-    .chart-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .chart-title i {
-      width: 22px;
-      height: 22px;
-      color: var(--accent-blue);
-      opacity: 0.85;
-    }
-
-    .chart-container {
-      height: 320px;
-      position: relative;
-    }
-
-    .insights-panel {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .insight-card {
-      background: rgba(15, 21, 32, 0.7);
-      border-radius: 18px;
-      padding: 1.5rem;
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      min-height: 150px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .insight-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top right, rgba(88, 166, 255, 0.18), transparent 60%);
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .insight-label {
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-    }
-
-    .insight-value {
-      font-size: 1.35rem;
-      font-weight: 600;
-    }
-
-    .activity-section {
-      background: var(--bg-glass);
-      border-radius: 24px;
-      border: var(--glass-border);
-      box-shadow: var(--shadow-sm);
-      padding: 2rem;
-      backdrop-filter: blur(16px);
-    }
-
-    .activity-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.75rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .activity-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .activity-title i {
-      width: 22px;
-      height: 22px;
-      color: var(--accent-purple);
-    }
-
-    .activity-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      max-height: 420px;
-      overflow-y: auto;
-      padding-right: 0.5rem;
-    }
-
-    .activity-item {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 1.2rem;
-      padding: 1rem 1.25rem;
-      border-radius: 16px;
-      background: rgba(17, 24, 39, 0.6);
-      border: 1px solid rgba(148, 163, 184, 0.12);
-      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .activity-item::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(88, 166, 255, 0.14), transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .activity-item:hover {
-      transform: translateX(6px);
-      border-color: rgba(88, 166, 255, 0.35);
-      box-shadow: 0 12px 30px rgba(5, 11, 25, 0.45);
-    }
-
-    .activity-item:hover::before {
-      opacity: 1;
-    }
-
-    .activity-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-    }
-
-    .activity-language {
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-blue);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .activity-meta {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .activity-time {
-      color: rgba(148, 163, 184, 0.8);
-      font-size: 0.8rem;
-    }
-
-    .activity-badge {
-      padding: 0.35rem 0.85rem;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .badge-accepted {
-      background: rgba(63, 185, 80, 0.18);
-      color: var(--accent-green);
-      border: 1px solid rgba(63, 185, 80, 0.35);
-    }
-
-    .badge-rejected {
-      background: rgba(255, 123, 114, 0.18);
-      color: #ff7b72;
-      border: 1px solid rgba(255, 123, 114, 0.35);
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 3rem 1rem;
-      color: var(--text-secondary);
-      text-align: center;
-    }
-
-    .empty-state i {
-      width: 32px;
-      height: 32px;
-      opacity: 0.6;
-    }
-
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.45);
-      border-radius: 999px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, rgba(88, 166, 255, 0.8), rgba(188, 140, 255, 0.8));
-      border-radius: 999px;
-    }
-
-    @media (max-width: 768px) {
       header {
-        padding: 1.25rem 1.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(18px);
+        background: rgba(7, 10, 18, 0.85);
+        border-bottom: var(--glass-border);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem 2rem;
+      }
+
+      .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 700;
+        font-size: 1.6rem;
+        letter-spacing: 0.02em;
+        color: white;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 25px rgba(88, 166, 255, 0.4);
+      }
+
+      .logo .accent-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        box-shadow: 0 0 15px rgba(63, 185, 80, 0.9);
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+
+      .actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.75rem 1.4rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        border: none;
+        cursor: pointer;
+        color: var(--text-primary);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.35s ease, background 0.35s ease;
+        backdrop-filter: blur(12px);
+        background: rgba(31, 41, 55, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+      }
+
+      .btn i {
+        width: 18px;
+        height: 18px;
+        opacity: 0.85;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 12px 30px rgba(88, 166, 255, 0.25);
+        border-color: rgba(88, 166, 255, 0.45);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          120deg,
+          rgba(88, 166, 255, 0.9),
+          rgba(188, 140, 255, 0.95)
+        );
+        color: #fff;
+        box-shadow: 0 15px 35px rgba(88, 166, 255, 0.35);
       }
 
       main {
-        padding: 2rem 1.5rem 3rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2.5rem 2rem 3.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
       }
 
-      .chart-container {
-        height: 260px;
+      .intro-text {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .intro-heading {
+        font-size: 2rem;
+        font-weight: 700;
+        max-width: 640px;
+        background: linear-gradient(120deg, #f4f4f5, rgba(88, 166, 255, 0.75));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .intro-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+
+      .glow-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(88, 166, 255, 0.1);
+        border: 1px solid rgba(88, 166, 255, 0.35);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent-blue);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.75rem;
       }
 
       .stat-card {
+        position: relative;
+        padding: 1.75rem;
+        border-radius: 20px;
+        background: var(--bg-glass);
+        border: var(--glass-border);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.45s ease;
+        isolation: isolate;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          145deg,
+          rgba(88, 166, 255, 0.12),
+          transparent 40%
+        );
+        opacity: 0;
+        transition: opacity 0.45s ease;
+        z-index: -1;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .stat-card:hover::before {
+        opacity: 1;
+      }
+
+      .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.1rem;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-secondary);
+      }
+
+      .stat-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--accent-blue);
+        opacity: 0.75;
+      }
+
+      .stat-value {
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.35rem;
+      }
+
+      .stat-subtext {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .trend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        background: rgba(63, 185, 80, 0.18);
+        color: var(--accent-green);
+        border: 1px solid rgba(63, 185, 80, 0.4);
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 2rem;
+      }
+
+      .chart-card {
+        background: var(--bg-glass);
+        border-radius: 24px;
+        padding: 2rem;
+        border: var(--glass-border);
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(16px);
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.45s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .chart-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          rgba(88, 166, 255, 0.12),
+          transparent 55%
+        );
+        opacity: 0;
+        transition: opacity 0.45s ease;
+        pointer-events: none;
+      }
+
+      .chart-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .chart-card:hover::after {
+        opacity: 1;
+      }
+
+      .chart-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-title i {
+        width: 22px;
+        height: 22px;
+        color: var(--accent-blue);
+        opacity: 0.85;
+      }
+
+      .chart-container {
+        height: 320px;
+        position: relative;
+      }
+
+      .insights-panel {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .insight-card {
+        background: rgba(15, 21, 32, 0.7);
+        border-radius: 18px;
         padding: 1.5rem;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: 150px;
+        position: relative;
+        overflow: hidden;
       }
-    }
 
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-        scroll-behavior: auto !important;
+      .insight-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at top right,
+          rgba(88, 166, 255, 0.18),
+          transparent 60%
+        );
+        opacity: 0.7;
+        pointer-events: none;
       }
-    }
-  </style>
-</head>
-<body class="animate__animated animate__fadeIn">
-  <div class="floating-orb orb-1"></div>
-  <div class="floating-orb orb-2"></div>
-  <div class="floating-orb orb-3"></div>
 
-  <header>
-    <div class="header-content">
-      <div class="logo">
-        <div class="accent-dot"></div>
-        <span>AI Observer</span>
-      </div>
-      <div class="actions">
-        <button class="btn" onclick="refreshData()">
-          <i data-lucide="refresh-cw"></i>
-          Refresh
-        </button>
-        <button class="btn" onclick="exportLogs()">
-          <i data-lucide="download"></i>
-          Export
-        </button>
-        <button class="btn btn-primary" onclick="clearLogs()">
-          <i data-lucide="trash-2"></i>
-          Clear
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <section class="intro-text">
-      <div>
-        <p class="glow-pill">Real-time Copilot telemetry</p>
-        <h1 class="intro-heading">Track how Copilot accelerates your workflow with a cinematic, data-rich cockpit.</h1>
-      </div>
-      <div class="intro-meta">
-        <i data-lucide="sparkles"></i>
-        <span>Auto-refreshing every 5 seconds • Optimized for VS Code</span>
-      </div>
-    </section>
-
-    <section class="stats-grid">
-      <article class="stat-card" data-animate>
-        <div class="stat-header">
-          <span class="stat-label">Total Interactions</span>
-          <i data-lucide="zap" class="stat-icon"></i>
-        </div>
-        <div class="stat-value" id="totalInteractions">0</div>
-        <div class="stat-subtext">
-          <span class="trend-chip" id="interactionTrend">Live</span>
-          <span>All-time captured suggestions</span>
-        </div>
-      </article>
-
-      <article class="stat-card" data-animate style="--accent: var(--accent-blue);">
-        <div class="stat-header">
-          <span class="stat-label">Avg Latency</span>
-          <i data-lucide="timer" class="stat-icon"></i>
-        </div>
-        <div class="stat-value" id="avgLatency">0</div>
-        <div class="stat-subtext">
-          <span id="latencyInsight">Awaiting data</span>
-        </div>
-      </article>
-
-      <article class="stat-card" data-animate>
-        <div class="stat-header">
-          <span class="stat-label">Acceptance Rate</span>
-          <i data-lucide="check-circle" class="stat-icon"></i>
-        </div>
-        <div class="stat-value" id="acceptanceRate">0</div>
-        <div class="stat-subtext">
-          <span class="trend-chip" id="acceptanceTrend">Momentum</span>
-          <span>Approved suggestions</span>
-        </div>
-      </article>
-
-      <article class="stat-card" data-animate>
-        <div class="stat-header">
-          <span class="stat-label">Top Language</span>
-          <i data-lucide="code" class="stat-icon"></i>
-        </div>
-        <div class="stat-value" id="topLanguage">N/A</div>
-        <div class="stat-subtext" id="topLanguageCount">Dominant usage pattern</div>
-      </article>
-    </section>
-
-    <section class="charts-grid">
-      <article class="chart-card" data-animate>
-        <h3 class="chart-title">
-          <i data-lucide="trending-up"></i>
-          Interactions Over Time
-        </h3>
-        <div class="chart-container">
-          <canvas id="timelineChart" aria-label="Line chart showing interactions over time" role="img"></canvas>
-        </div>
-      </article>
-
-      <article class="chart-card" data-animate>
-        <h3 class="chart-title">
-          <i data-lucide="bar-chart-3"></i>
-          Top Languages
-        </h3>
-        <div class="chart-container">
-          <canvas id="languagesChart" aria-label="Bar chart highlighting languages" role="img"></canvas>
-        </div>
-      </article>
-    </section>
-
-    <section class="insights-panel">
-      <div class="insight-card" data-animate>
-        <span class="insight-label">Most active hour</span>
-        <span class="insight-value" id="insightHour">—</span>
-        <span class="activity-time">Spot when Copilot is busiest.</span>
-      </div>
-      <div class="insight-card" data-animate>
-        <span class="insight-label">Acceptance streak</span>
-        <span class="insight-value" id="insightStreak">—</span>
-        <span class="activity-time">Track consecutive approvals.</span>
-      </div>
-      <div class="insight-card" data-animate>
-        <span class="insight-label">Fastest interaction</span>
-        <span class="insight-value" id="insightFastest">—</span>
-        <span class="activity-time">Quickest response seen so far.</span>
-      </div>
-    </section>
-
-    <section class="activity-section" data-animate>
-      <div class="activity-header">
-        <h3 class="activity-title">
-          <i data-lucide="activity"></i>
-          Recent Activity
-        </h3>
-        <span class="glow-pill" id="activityCount">0 records</span>
-      </div>
-      <div class="activity-list" id="activityList" aria-live="polite"></div>
-    </section>
-  </main>
-
-  <script nonce="${nonce}">
-    const isVsCode = typeof acquireVsCodeApi === 'function';
-    const vscode = isVsCode ? acquireVsCodeApi() : { postMessage: () => {} };
-    const numberFormatter = new Intl.NumberFormat();
-    const percentageFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
-    const durationFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
-
-    let timelineChart;
-    let languagesChart;
-    let timelineCtx;
-    let languagesCtx;
-    let firstRender = true;
-
-    const defaultInsights = {
-      hour: '—',
-      streak: '—',
-      fastest: '—',
-    };
-
-    lucide.createIcons();
-
-    function createTimelineGradient(ctx) {
-      const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-      gradient.addColorStop(0, 'rgba(88, 166, 255, 0.45)');
-      gradient.addColorStop(0.7, 'rgba(88, 166, 255, 0.12)');
-      gradient.addColorStop(1, 'rgba(88, 166, 255, 0.02)');
-      return gradient;
-    }
-
-    function getLanguageGradient(context) {
-      const { chart } = context;
-      const { ctx, chartArea } = chart;
-      if (!chartArea) {
-        return 'rgba(88, 166, 255, 0.8)';
+      .insight-label {
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
       }
-      const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-      gradient.addColorStop(0, 'rgba(88, 166, 255, 0.25)');
-      gradient.addColorStop(0.5, 'rgba(188, 140, 255, 0.45)');
-      gradient.addColorStop(1, 'rgba(63, 185, 80, 0.75)');
-      return gradient;
-    }
 
-    function initCharts() {
-      timelineCtx = document.getElementById('timelineChart').getContext('2d');
-      languagesCtx = document.getElementById('languagesChart').getContext('2d');
+      .insight-value {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
 
-      const gridColor = 'rgba(255, 255, 255, 0.08)';
+      .activity-section {
+        background: var(--bg-glass);
+        border-radius: 24px;
+        border: var(--glass-border);
+        box-shadow: var(--shadow-sm);
+        padding: 2rem;
+        backdrop-filter: blur(16px);
+      }
 
-      timelineChart = new Chart(timelineCtx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Interactions',
-            data: [],
-            tension: 0.4,
-            fill: true,
-            borderWidth: 3,
-            borderColor: '#58a6ff',
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#0ea5e9',
-            backgroundColor: (context) => createTimelineGradient(context.chart.ctx),
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(9, 15, 25, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#cbd5f5',
-              borderColor: 'rgba(88, 166, 255, 0.4)',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: false,
-            },
-          },
-          scales: {
-            x: {
-              grid: { color: gridColor, drawTicks: false },
-              ticks: {
-                color: '#a1a1aa',
-                font: { size: 12, family: 'Inter, sans-serif' },
-              },
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: gridColor },
-              ticks: {
-                color: '#a1a1aa',
-                font: { size: 12, family: 'Inter, sans-serif' },
-              },
-            },
-          },
-        },
+      .activity-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.75rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .activity-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .activity-title i {
+        width: 22px;
+        height: 22px;
+        color: var(--accent-purple);
+      }
+
+      .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+      }
+
+      .activity-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1.2rem;
+        padding: 1rem 1.25rem;
+        border-radius: 16px;
+        background: rgba(17, 24, 39, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        transition: transform 0.3s ease, border-color 0.3s ease,
+          box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .activity-item::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          rgba(88, 166, 255, 0.14),
+          transparent 70%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+
+      .activity-item:hover {
+        transform: translateX(6px);
+        border-color: rgba(88, 166, 255, 0.35);
+        box-shadow: 0 12px 30px rgba(5, 11, 25, 0.45);
+      }
+
+      .activity-item:hover::before {
+        opacity: 1;
+      }
+
+      .activity-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+      }
+
+      .activity-language {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent-blue);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .activity-meta {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .activity-time {
+        color: rgba(148, 163, 184, 0.8);
+        font-size: 0.8rem;
+      }
+
+      .activity-badge {
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .badge-accepted {
+        background: rgba(63, 185, 80, 0.18);
+        color: var(--accent-green);
+        border: 1px solid rgba(63, 185, 80, 0.35);
+      }
+
+      .badge-rejected {
+        background: rgba(255, 123, 114, 0.18);
+        color: #ff7b72;
+        border: 1px solid rgba(255, 123, 114, 0.35);
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 3rem 1rem;
+        color: var(--text-secondary);
+        text-align: center;
+      }
+
+      .empty-state i {
+        width: 32px;
+        height: 32px;
+        opacity: 0.6;
+      }
+
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.45);
+        border-radius: 999px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+          180deg,
+          rgba(88, 166, 255, 0.8),
+          rgba(188, 140, 255, 0.8)
+        );
+        border-radius: 999px;
+      }
+
+      @media (max-width: 768px) {
+        header {
+          padding: 1.25rem 1.5rem;
+        }
+
+        main {
+          padding: 2rem 1.5rem 3rem;
+        }
+
+        .chart-container {
+          height: 260px;
+        }
+
+        .stat-card {
+          padding: 1.5rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="animate__animated animate__fadeIn">
+    <div class="floating-orb orb-1"></div>
+    <div class="floating-orb orb-2"></div>
+    <div class="floating-orb orb-3"></div>
+
+    <header>
+      <div class="header-content">
+        <div class="logo">
+          <div class="accent-dot"></div>
+          <span>AI Observer</span>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="refreshData()">
+            <i data-lucide="refresh-cw"></i>
+            Refresh
+          </button>
+          <button class="btn" onclick="exportLogs()">
+            <i data-lucide="download"></i>
+            Export
+          </button>
+          <button class="btn btn-primary" onclick="clearLogs()">
+            <i data-lucide="trash-2"></i>
+            Clear
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro-text">
+        <div>
+          <p class="glow-pill">Real-time Copilot telemetry</p>
+          <h1 class="intro-heading">
+            Track how Copilot accelerates your workflow with a cinematic,
+            data-rich cockpit.
+          </h1>
+        </div>
+        <div class="intro-meta">
+          <i data-lucide="sparkles"></i>
+          <span>Auto-refreshing every 5 seconds • Optimized for VS Code</span>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card" data-animate>
+          <div class="stat-header">
+            <span class="stat-label">Total Interactions</span>
+            <i data-lucide="zap" class="stat-icon"></i>
+          </div>
+          <div class="stat-value" id="totalInteractions">0</div>
+          <div class="stat-subtext">
+            <span class="trend-chip" id="interactionTrend">Live</span>
+            <span>All-time captured suggestions</span>
+          </div>
+        </article>
+
+        <article
+          class="stat-card"
+          data-animate
+          style="--accent: var(--accent-blue)"
+        >
+          <div class="stat-header">
+            <span class="stat-label">Avg Latency</span>
+            <i data-lucide="timer" class="stat-icon"></i>
+          </div>
+          <div class="stat-value" id="avgLatency">0</div>
+          <div class="stat-subtext">
+            <span id="latencyInsight">Awaiting data</span>
+          </div>
+        </article>
+
+        <article class="stat-card" data-animate>
+          <div class="stat-header">
+            <span class="stat-label">Acceptance Rate</span>
+            <i data-lucide="check-circle" class="stat-icon"></i>
+          </div>
+          <div class="stat-value" id="acceptanceRate">0</div>
+          <div class="stat-subtext">
+            <span class="trend-chip" id="acceptanceTrend">Momentum</span>
+            <span>Approved suggestions</span>
+          </div>
+        </article>
+
+        <article class="stat-card" data-animate>
+          <div class="stat-header">
+            <span class="stat-label">Top Language</span>
+            <i data-lucide="code" class="stat-icon"></i>
+          </div>
+          <div class="stat-value" id="topLanguage">N/A</div>
+          <div class="stat-subtext" id="topLanguageCount">
+            Dominant usage pattern
+          </div>
+        </article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="chart-card" data-animate>
+          <h3 class="chart-title">
+            <i data-lucide="trending-up"></i>
+            Interactions Over Time
+          </h3>
+          <div class="chart-container">
+            <canvas
+              id="timelineChart"
+              aria-label="Line chart showing interactions over time"
+              role="img"
+            ></canvas>
+          </div>
+        </article>
+
+        <article class="chart-card" data-animate>
+          <h3 class="chart-title">
+            <i data-lucide="bar-chart-3"></i>
+            Top Languages
+          </h3>
+          <div class="chart-container">
+            <canvas
+              id="languagesChart"
+              aria-label="Bar chart highlighting languages"
+              role="img"
+            ></canvas>
+          </div>
+        </article>
+      </section>
+
+      <section class="insights-panel">
+        <div class="insight-card" data-animate>
+          <span class="insight-label">Most active hour</span>
+          <span class="insight-value" id="insightHour">—</span>
+          <span class="activity-time">Spot when Copilot is busiest.</span>
+        </div>
+        <div class="insight-card" data-animate>
+          <span class="insight-label">Acceptance streak</span>
+          <span class="insight-value" id="insightStreak">—</span>
+          <span class="activity-time">Track consecutive approvals.</span>
+        </div>
+        <div class="insight-card" data-animate>
+          <span class="insight-label">Fastest interaction</span>
+          <span class="insight-value" id="insightFastest">—</span>
+          <span class="activity-time">Quickest response seen so far.</span>
+        </div>
+      </section>
+
+      <section class="activity-section" data-animate>
+        <div class="activity-header">
+          <h3 class="activity-title">
+            <i data-lucide="activity"></i>
+            Recent Activity
+          </h3>
+          <span class="glow-pill" id="activityCount">0 records</span>
+        </div>
+        <div class="activity-list" id="activityList" aria-live="polite"></div>
+      </section>
+
+      <section id="analytics">
+        <h2>Analytics Overview</h2>
+        <div id="totalInteractions">
+          Total Interactions: <span id="totalCount">0</span>
+        </div>
+        <div id="interactionsPerLanguage">
+          Interactions Per Language: <span id="languageCounts"></span>
+        </div>
+      </section>
+    </main>
+
+    <script nonce="${nonce}">
+      const isVsCode = typeof acquireVsCodeApi === "function";
+      const vscode = isVsCode ? acquireVsCodeApi() : { postMessage: () => {} };
+      const numberFormatter = new Intl.NumberFormat();
+      const percentageFormatter = new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 0,
+      });
+      const durationFormatter = new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 0,
       });
 
-      languagesChart = new Chart(languagesCtx, {
-        type: 'bar',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Usage',
-            data: [],
-            borderRadius: 12,
-            barPercentage: 0.55,
-            categoryPercentage: 0.6,
-            borderSkipped: false,
-            backgroundColor: getLanguageGradient,
-            hoverBackgroundColor: 'rgba(188, 140, 255, 0.85)',
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(9, 15, 25, 0.9)',
-              titleColor: '#f8fafc',
-              bodyColor: '#cbd5f5',
-              borderColor: 'rgba(188, 140, 255, 0.4)',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: false,
-            },
-          },
-          scales: {
-            x: {
-              grid: { display: false, drawTicks: false },
-              ticks: {
-                color: '#a1a1aa',
-                font: { size: 12, family: 'Inter, sans-serif' },
-              },
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: gridColor },
-              ticks: {
-                color: '#a1a1aa',
-                font: { size: 12, family: 'Inter, sans-serif' },
-              },
-            },
-          },
-        },
-      });
+      let timelineChart;
+      let languagesChart;
+      let timelineCtx;
+      let languagesCtx;
+      let firstRender = true;
 
-      window.addEventListener('resize', () => {
-        if (!timelineChart || !languagesChart) {
+      const defaultInsights = {
+        hour: "—",
+        streak: "—",
+        fastest: "—",
+      };
+
+      lucide.createIcons();
+
+      function createTimelineGradient(ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+        gradient.addColorStop(0, "rgba(88, 166, 255, 0.45)");
+        gradient.addColorStop(0.7, "rgba(88, 166, 255, 0.12)");
+        gradient.addColorStop(1, "rgba(88, 166, 255, 0.02)");
+        return gradient;
+      }
+
+      function getLanguageGradient(context) {
+        const { chart } = context;
+        const { ctx, chartArea } = chart;
+        if (!chartArea) {
+          return "rgba(88, 166, 255, 0.8)";
+        }
+        const gradient = ctx.createLinearGradient(
+          0,
+          chartArea.bottom,
+          0,
+          chartArea.top
+        );
+        gradient.addColorStop(0, "rgba(88, 166, 255, 0.25)");
+        gradient.addColorStop(0.5, "rgba(188, 140, 255, 0.45)");
+        gradient.addColorStop(1, "rgba(63, 185, 80, 0.75)");
+        return gradient;
+      }
+
+      function initCharts() {
+        timelineCtx = document.getElementById("timelineChart").getContext("2d");
+        languagesCtx = document
+          .getElementById("languagesChart")
+          .getContext("2d");
+
+        const gridColor = "rgba(255, 255, 255, 0.08)";
+
+        timelineChart = new Chart(timelineCtx, {
+          type: "line",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Interactions",
+                data: [],
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3,
+                borderColor: "#58a6ff",
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: "#0ea5e9",
+                backgroundColor: (context) =>
+                  createTimelineGradient(context.chart.ctx),
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "rgba(9, 15, 25, 0.9)",
+                titleColor: "#f8fafc",
+                bodyColor: "#cbd5f5",
+                borderColor: "rgba(88, 166, 255, 0.4)",
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: gridColor, drawTicks: false },
+                ticks: {
+                  color: "#a1a1aa",
+                  font: { size: 12, family: "Inter, sans-serif" },
+                },
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor },
+                ticks: {
+                  color: "#a1a1aa",
+                  font: { size: 12, family: "Inter, sans-serif" },
+                },
+              },
+            },
+          },
+        });
+
+        languagesChart = new Chart(languagesCtx, {
+          type: "bar",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Usage",
+                data: [],
+                borderRadius: 12,
+                barPercentage: 0.55,
+                categoryPercentage: 0.6,
+                borderSkipped: false,
+                backgroundColor: getLanguageGradient,
+                hoverBackgroundColor: "rgba(188, 140, 255, 0.85)",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "rgba(9, 15, 25, 0.9)",
+                titleColor: "#f8fafc",
+                bodyColor: "#cbd5f5",
+                borderColor: "rgba(188, 140, 255, 0.4)",
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+              },
+            },
+            scales: {
+              x: {
+                grid: { display: false, drawTicks: false },
+                ticks: {
+                  color: "#a1a1aa",
+                  font: { size: 12, family: "Inter, sans-serif" },
+                },
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor },
+                ticks: {
+                  color: "#a1a1aa",
+                  font: { size: 12, family: "Inter, sans-serif" },
+                },
+              },
+            },
+          },
+        });
+
+        window.addEventListener("resize", () => {
+          if (!timelineChart || !languagesChart) {
+            return;
+          }
+          timelineChart.update("none");
+          languagesChart.update("none");
+        });
+      }
+
+      function escapeHtml(value) {
+        if (value === undefined || value === null) {
+          return "";
+        }
+        return value
+          .toString()
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function easeOutQuad(t) {
+        return 1 - (1 - t) * (1 - t);
+      }
+
+      function animateValue(
+        id,
+        target,
+        formatter = (value) => Math.round(value).toString(),
+        duration = 900
+      ) {
+        const element = document.getElementById(id);
+        if (!element) {
           return;
         }
-        timelineChart.update('none');
-        languagesChart.update('none');
-      });
-    }
 
-    function escapeHtml(value) {
-      if (value === undefined || value === null) {
-        return '';
-      }
-      return value
-        .toString()
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
+        const startValue =
+          Number(
+            element.dataset.value ??
+              element.textContent.replace(/[^0-9.\-]/g, "")
+          ) || 0;
+        const startTime = performance.now();
 
-    function easeOutQuad(t) {
-      return 1 - (1 - t) * (1 - t);
-    }
+        function frame(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = easeOutQuad(progress);
+          const value = startValue + (target - startValue) * eased;
+          element.textContent = formatter(value);
 
-    function animateValue(id, target, formatter = (value) => Math.round(value).toString(), duration = 900) {
-      const element = document.getElementById(id);
-      if (!element) {
-        return;
+          if (progress < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            element.dataset.value = target.toString();
+          }
+        }
+
+        requestAnimationFrame(frame);
       }
 
-      const startValue = Number(element.dataset.value ?? element.textContent.replace(/[^0-9.\-]/g, '')) || 0;
-      const startTime = performance.now();
+      function updateTrendChip(id, value) {
+        const chip = document.getElementById(id);
+        if (!chip) {
+          return;
+        }
+        chip.textContent = value;
+      }
 
-      function frame(now) {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = easeOutQuad(progress);
-        const value = startValue + (target - startValue) * eased;
-        element.textContent = formatter(value);
-
-        if (progress < 1) {
-          requestAnimationFrame(frame);
-        } else {
-          element.dataset.value = target.toString();
+      function formatTimestamp(timestamp) {
+        try {
+          return new Date(timestamp).toLocaleString();
+        } catch (error) {
+          return "Unknown time";
         }
       }
 
-      requestAnimationFrame(frame);
-    }
-
-    function updateTrendChip(id, value) {
-      const chip = document.getElementById(id);
-      if (!chip) {
-        return;
-      }
-      chip.textContent = value;
-    }
-
-    function formatTimestamp(timestamp) {
-      try {
-        return new Date(timestamp).toLocaleString();
-      } catch (error) {
-        return 'Unknown time';
-      }
-    }
-
-    function calculateInsights(analytics, interactions) {
-      if (!analytics || interactions.length === 0) {
-        return { ...defaultInsights };
-      }
-
-      const hours = new Array(24).fill(0);
-      let streak = 0;
-      let longestStreak = 0;
-      let fastest = Number.POSITIVE_INFINITY;
-
-      for (const interaction of interactions) {
-        const date = new Date(interaction.timestamp);
-        hours[date.getHours()] += 1;
-
-        if (interaction.accepted) {
-          streak += 1;
-          longestStreak = Math.max(longestStreak, streak);
-        } else {
-          streak = 0;
+      function calculateInsights(analytics, interactions) {
+        if (!analytics || interactions.length === 0) {
+          return { ...defaultInsights };
         }
 
-        if (interaction.latency && interaction.latency > 0) {
-          fastest = Math.min(fastest, interaction.latency);
+        const hours = new Array(24).fill(0);
+        let streak = 0;
+        let longestStreak = 0;
+        let fastest = Number.POSITIVE_INFINITY;
+
+        for (const interaction of interactions) {
+          const date = new Date(interaction.timestamp);
+          hours[date.getHours()] += 1;
+
+          if (interaction.accepted) {
+            streak += 1;
+            longestStreak = Math.max(longestStreak, streak);
+          } else {
+            streak = 0;
+          }
+
+          if (interaction.latency && interaction.latency > 0) {
+            fastest = Math.min(fastest, interaction.latency);
+          }
         }
+
+        const mostActiveHourIndex = hours.indexOf(Math.max(...hours));
+        const hourFormatter = new Intl.DateTimeFormat(undefined, {
+          hour: "numeric",
+          hour12: true,
+        });
+
+        const sampleDate = new Date();
+        sampleDate.setHours(mostActiveHourIndex);
+
+        return {
+          hour:
+            hours[mostActiveHourIndex] === 0
+              ? "—"
+              : hourFormatter.format(sampleDate),
+          streak:
+            longestStreak === 0 ? "—" : `${longestStreak} accepted in a row`,
+          fastest: !Number.isFinite(fastest)
+            ? "—"
+            : `${durationFormatter.format(fastest)}ms`,
+        };
       }
 
-      const mostActiveHourIndex = hours.indexOf(Math.max(...hours));
-      const hourFormatter = new Intl.DateTimeFormat(undefined, {
-        hour: 'numeric',
-        hour12: true,
-      });
+      function renderActivity(interactions) {
+        const list = document.getElementById("activityList");
+        if (!list) {
+          return;
+        }
 
-      const sampleDate = new Date();
-      sampleDate.setHours(mostActiveHourIndex);
-
-      return {
-        hour: hours[mostActiveHourIndex] === 0 ? '—' : hourFormatter.format(sampleDate),
-        streak: longestStreak === 0 ? '—' : `${longestStreak} accepted in a row`,
-        fastest: !Number.isFinite(fastest) ? '—' : `${durationFormatter.format(fastest)}ms`,
-      };
-    }
-
-    function renderActivity(interactions) {
-      const list = document.getElementById('activityList');
-      if (!list) {
-        return;
-      }
-
-      if (!interactions || interactions.length === 0) {
-        list.innerHTML = `
+        if (!interactions || interactions.length === 0) {
+          list.innerHTML = `
           <div class="empty-state">
             <i data-lucide="radar"></i>
             <p>No interactions yet. Start coding with Copilot to see insights appear in real-time.</p>
           </div>
         `;
-        lucide.createIcons();
-        return;
-      }
+          lucide.createIcons();
+          return;
+        }
 
-      const markup = interactions
-        .map((interaction) => {
-          const badgeClass = interaction.accepted ? 'badge-accepted' : 'badge-rejected';
-          const badgeLabel = interaction.accepted ? 'Accepted' : 'Rejected';
-          const icon = interaction.accepted ? 'sparkles' : 'x-circle';
-          return `
+        const markup = interactions
+          .map((interaction) => {
+            const badgeClass = interaction.accepted
+              ? "badge-accepted"
+              : "badge-rejected";
+            const badgeLabel = interaction.accepted ? "Accepted" : "Rejected";
+            const icon = interaction.accepted ? "sparkles" : "x-circle";
+            return `
             <div class="activity-item">
               <div class="activity-info">
                 <span class="activity-language">
                   <i data-lucide="${icon}"></i>
-                  ${escapeHtml(interaction.language || 'unknown')}
+                  ${escapeHtml(interaction.language || "unknown")}
                 </span>
                 <div class="activity-meta">
-                  <span>${escapeHtml(interaction.modelName || 'copilot')}</span>
-                  <span>${durationFormatter.format(interaction.latency ?? 0)}ms</span>
-                  <span class="activity-time">${escapeHtml(formatTimestamp(interaction.timestamp))}</span>
+                  <span>${escapeHtml(interaction.modelName || "copilot")}</span>
+                  <span>${durationFormatter.format(
+                    interaction.latency ?? 0
+                  )}ms</span>
+                  <span class="activity-time">${escapeHtml(
+                    formatTimestamp(interaction.timestamp)
+                  )}</span>
                 </div>
                 <div class="activity-meta">
-                  <span>${escapeHtml(interaction.filePath || '—')}</span>
+                  <span>${escapeHtml(interaction.filePath || "—")}</span>
                 </div>
               </div>
               <span class="activity-badge ${badgeClass}">${badgeLabel}</span>
             </div>
           `;
-        })
-        .join('');
+          })
+          .join("");
 
-      list.innerHTML = markup;
-      lucide.createIcons();
+        list.innerHTML = markup;
+        lucide.createIcons();
 
-      gsap.fromTo(
-        '.activity-item',
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.6, stagger: 0.04, ease: 'power2.out' },
-      );
-    }
-
-    function updateDashboard(message) {
-      const analytics = message?.analytics ?? {};
-      const recentInteractions = message?.recentInteractions ?? [];
-
-      animateValue('totalInteractions', analytics.totalInteractions ?? 0, (value) => numberFormatter.format(value));
-      animateValue('avgLatency', analytics.averageLatency ?? 0, (value) => `${durationFormatter.format(value)}ms`);
-      animateValue('acceptanceRate', analytics.acceptanceRate ?? 0, (value) => `${percentageFormatter.format(value)}%`);
-
-      const topLanguage = analytics?.topLanguages?.[0];
-      const topLanguageElement = document.getElementById('topLanguage');
-      const topLanguageCountElement = document.getElementById('topLanguageCount');
-      if (topLanguageElement) {
-        topLanguageElement.textContent = topLanguage
-          ? topLanguage.language.toUpperCase()
-          : 'N/A';
-      }
-      if (topLanguageCountElement) {
-        topLanguageCountElement.textContent = topLanguage
-          ? `${numberFormatter.format(topLanguage.count)} interactions`
-          : 'Dominant usage pattern';
-      }
-
-      updateTrendChip('interactionTrend', `${analytics.totalInteractions ?? 0} captured`);
-      updateTrendChip('acceptanceTrend', `${analytics.acceptanceRate ?? 0}% success`);
-      const latencyInsight = document.getElementById('latencyInsight');
-      if (latencyInsight) {
-        latencyInsight.textContent = analytics.averageLatency
-          ? `Median response around ${durationFormatter.format(analytics.averageLatency)}ms`
-          : 'Awaiting data';
-      }
-
-      const activityCount = document.getElementById('activityCount');
-      if (activityCount) {
-        activityCount.textContent = `${numberFormatter.format(recentInteractions.length)} records`;
-      }
-
-      if (timelineChart) {
-        timelineChart.data.labels = (analytics.interactionsOverTime ?? []).map((entry) => entry.date);
-        timelineChart.data.datasets[0].data = (analytics.interactionsOverTime ?? []).map((entry) => entry.count);
-        timelineChart.update('none');
-      }
-
-      if (languagesChart) {
-        languagesChart.data.labels = (analytics.topLanguages ?? []).map((entry) => entry.language.toUpperCase());
-        languagesChart.data.datasets[0].data = (analytics.topLanguages ?? []).map((entry) => entry.count);
-        languagesChart.update('none');
-      }
-
-      const insights = calculateInsights(analytics, recentInteractions.slice().reverse());
-      const insightHour = document.getElementById('insightHour');
-      const insightStreak = document.getElementById('insightStreak');
-      const insightFastest = document.getElementById('insightFastest');
-      if (insightHour) {
-        insightHour.textContent = insights.hour;
-      }
-      if (insightStreak) {
-        insightStreak.textContent = insights.streak;
-      }
-      if (insightFastest) {
-        insightFastest.textContent = insights.fastest;
-      }
-
-      renderActivity(recentInteractions);
-
-      if (firstRender) {
-        firstRender = false;
         gsap.fromTo(
-          '[data-animate]',
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: 'power3.out' },
+          ".activity-item",
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.04, ease: "power2.out" }
         );
       }
-    }
 
-    function refreshData() {
+      function updateDashboard(message) {
+        const analytics = message?.analytics ?? {};
+        const recentInteractions = message?.recentInteractions ?? [];
+
+        animateValue(
+          "totalInteractions",
+          analytics.totalInteractions ?? 0,
+          (value) => numberFormatter.format(value)
+        );
+        animateValue(
+          "avgLatency",
+          analytics.averageLatency ?? 0,
+          (value) => `${durationFormatter.format(value)}ms`
+        );
+        animateValue(
+          "acceptanceRate",
+          analytics.acceptanceRate ?? 0,
+          (value) => `${percentageFormatter.format(value)}%`
+        );
+
+        const topLanguage = analytics?.topLanguages?.[0];
+        const topLanguageElement = document.getElementById("topLanguage");
+        const topLanguageCountElement =
+          document.getElementById("topLanguageCount");
+        if (topLanguageElement) {
+          topLanguageElement.textContent = topLanguage
+            ? topLanguage.language.toUpperCase()
+            : "N/A";
+        }
+        if (topLanguageCountElement) {
+          topLanguageCountElement.textContent = topLanguage
+            ? `${numberFormatter.format(topLanguage.count)} interactions`
+            : "Dominant usage pattern";
+        }
+
+        updateTrendChip(
+          "interactionTrend",
+          `${analytics.totalInteractions ?? 0} captured`
+        );
+        updateTrendChip(
+          "acceptanceTrend",
+          `${analytics.acceptanceRate ?? 0}% success`
+        );
+        const latencyInsight = document.getElementById("latencyInsight");
+        if (latencyInsight) {
+          latencyInsight.textContent = analytics.averageLatency
+            ? `Median response around ${durationFormatter.format(
+                analytics.averageLatency
+              )}ms`
+            : "Awaiting data";
+        }
+
+        const activityCount = document.getElementById("activityCount");
+        if (activityCount) {
+          activityCount.textContent = `${numberFormatter.format(
+            recentInteractions.length
+          )} records`;
+        }
+
+        if (timelineChart) {
+          timelineChart.data.labels = (
+            analytics.interactionsOverTime ?? []
+          ).map((entry) => entry.date);
+          timelineChart.data.datasets[0].data = (
+            analytics.interactionsOverTime ?? []
+          ).map((entry) => entry.count);
+          timelineChart.update("none");
+        }
+
+        if (languagesChart) {
+          languagesChart.data.labels = (analytics.topLanguages ?? []).map(
+            (entry) => entry.language.toUpperCase()
+          );
+          languagesChart.data.datasets[0].data = (
+            analytics.topLanguages ?? []
+          ).map((entry) => entry.count);
+          languagesChart.update("none");
+        }
+
+        const insights = calculateInsights(
+          analytics,
+          recentInteractions.slice().reverse()
+        );
+        const insightHour = document.getElementById("insightHour");
+        const insightStreak = document.getElementById("insightStreak");
+        const insightFastest = document.getElementById("insightFastest");
+        if (insightHour) {
+          insightHour.textContent = insights.hour;
+        }
+        if (insightStreak) {
+          insightStreak.textContent = insights.streak;
+        }
+        if (insightFastest) {
+          insightFastest.textContent = insights.fastest;
+        }
+
+        renderActivity(recentInteractions);
+
+        if (firstRender) {
+          firstRender = false;
+          gsap.fromTo(
+            "[data-animate]",
+            { opacity: 0, y: 24 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              stagger: 0.08,
+              ease: "power3.out",
+            }
+          );
+        }
+      }
+
+      function refreshData() {
+        if (isVsCode) {
+          vscode.postMessage({ type: "refresh" });
+        }
+      }
+
+      function exportLogs() {
+        if (isVsCode) {
+          vscode.postMessage({ type: "export" });
+        }
+      }
+
+      function clearLogs() {
+        if (!isVsCode) {
+          return;
+        }
+
+        const confirmed =
+          typeof window !== "undefined"
+            ? window.confirm(
+                "Are you sure you want to clear all Copilot logs? This cannot be undone."
+              )
+            : false;
+        if (confirmed) {
+          vscode.postMessage({ type: "clear" });
+        }
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.data?.type === "update") {
+          updateDashboard(event.data.data);
+        }
+      });
+
+      initCharts();
+
       if (isVsCode) {
-        vscode.postMessage({ type: 'refresh' });
+        vscode.postMessage({ type: "refresh" });
+      } else {
+        setTimeout(() => {
+          const mock = {
+            analytics: {
+              totalInteractions: 240,
+              averageLatency: 320,
+              acceptanceRate: 68,
+              topLanguages: [
+                { language: "typescript", count: 120 },
+                { language: "python", count: 56 },
+                { language: "javascript", count: 42 },
+                { language: "go", count: 15 },
+                { language: "rust", count: 7 },
+              ],
+              interactionsOverTime: [
+                { date: "Mon", count: 18 },
+                { date: "Tue", count: 35 },
+                { date: "Wed", count: 42 },
+                { date: "Thu", count: 37 },
+                { date: "Fri", count: 29 },
+                { date: "Sat", count: 22 },
+                { date: "Sun", count: 57 },
+              ],
+            },
+            recentInteractions: Array.from({ length: 10 }).map((_, index) => ({
+              language: ["typescript", "python", "javascript", "go"][index % 4],
+              modelName: "copilot",
+              latency: Math.floor(Math.random() * 400) + 80,
+              accepted: index % 3 !== 0,
+              timestamp: Date.now() - index * 3600 * 1000,
+              filePath: `/workspace/src/example-${index}.ts`,
+            })),
+          };
+          updateDashboard(mock);
+        }, 400);
       }
-    }
-
-    function exportLogs() {
-      if (isVsCode) {
-        vscode.postMessage({ type: 'export' });
-      }
-    }
-
-    function clearLogs() {
-      if (!isVsCode) {
-        return;
-      }
-
-      const confirmed = typeof window !== 'undefined'
-        ? window.confirm('Are you sure you want to clear all Copilot logs? This cannot be undone.')
-        : false;
-      if (confirmed) {
-        vscode.postMessage({ type: 'clear' });
-      }
-    }
-
-    window.addEventListener('message', (event) => {
-      if (event.data?.type === 'update') {
-        updateDashboard(event.data.data);
-      }
-    });
-
-    initCharts();
-
-    if (isVsCode) {
-      vscode.postMessage({ type: 'refresh' });
-    } else {
-      setTimeout(() => {
-        const mock = {
-          analytics: {
-            totalInteractions: 240,
-            averageLatency: 320,
-            acceptanceRate: 68,
-            topLanguages: [
-              { language: 'typescript', count: 120 },
-              { language: 'python', count: 56 },
-              { language: 'javascript', count: 42 },
-              { language: 'go', count: 15 },
-              { language: 'rust', count: 7 },
-            ],
-            interactionsOverTime: [
-              { date: 'Mon', count: 18 },
-              { date: 'Tue', count: 35 },
-              { date: 'Wed', count: 42 },
-              { date: 'Thu', count: 37 },
-              { date: 'Fri', count: 29 },
-              { date: 'Sat', count: 22 },
-              { date: 'Sun', count: 57 },
-            ],
-          },
-          recentInteractions: Array.from({ length: 10 }).map((_, index) => ({
-            language: ['typescript', 'python', 'javascript', 'go'][index % 4],
-            modelName: 'copilot',
-            latency: Math.floor(Math.random() * 400) + 80,
-            accepted: index % 3 !== 0,
-            timestamp: Date.now() - index * 3600 * 1000,
-            filePath: `/workspace/src/example-${index}.ts`,
-          })),
-        };
-        updateDashboard(mock);
-      }, 400);
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
