@@ -48,7 +48,6 @@ export class StorageManager {
     try {
       await fs.access(this.storagePath);
     } catch (error) {
-      // When no storage file exists yet we simply start with an empty cache.
       this.interactions = [];
       console.log('No existing storage, starting fresh');
       return;

@@ -12,10 +12,8 @@ let copilotAdapter: CopilotAdapter | null = null;
 export function activate(context: vscode.ExtensionContext) {
   console.log('AI Observer is activating...');
 
-  // Initialize event bus
   const eventBus = new EventBus();
 
-  // Create the storage manager responsible for persisting interactions.
   const storage = new StorageManager(context.globalStorageUri.fsPath);
 
   const dashboardProvider = new DashboardProvider(context.extensionUri, storage);
@@ -65,7 +63,6 @@ export function activate(context: vscode.ExtensionContext) {
     configurationListener,
   );
 
-  // Test command to verify extension works
   const testCmd = vscode.commands.registerCommand('ai-observer.test', () => {
     vscode.window.showInformationMessage('AI Observer is working!');
   });
