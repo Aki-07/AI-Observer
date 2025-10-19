@@ -2,7 +2,7 @@
   "name": "ai-observer",
   "displayName": "AI Observer",
   "description": "Intelligent analytics for GitHub Copilot interactions",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aki-07/AI-Observer"

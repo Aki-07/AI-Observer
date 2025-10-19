@@ -1,13 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import * as fsp from 'fs/promises';
 import { EventBus } from './core/EventBus';
 import { StorageManager } from './core/StorageManager';
 import { CopilotAdapter } from './adapters/CopilotAdapter';
 import { AIInteraction } from './types';
 import { DashboardProvider } from './dashboard/DashboardProvider';
+import { CopilotChatMonitor } from './adapters/CoPilotChatMonitor';
 
 let copilotAdapter: CopilotAdapter | null = null;
+let chatMonitor: CopilotChatMonitor | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('AI Observer is activating...');
@@ -20,12 +23,76 @@ export function activate(context: vscode.ExtensionContext) {
 
   copilotAdapter = new CopilotAdapter(eventBus);
 
-  // Track whether logging is currently enabled via configuration.
-  const configuration = vscode.workspace.getConfiguration('aiObserver');
-  let loggingEnabled = configuration.get<boolean>('enableLogging', true);
+  const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  statusBarItem.command = 'ai-observer.viewDashboard';
+  statusBarItem.name = 'AI Observer';
+  statusBarItem.text = '$(graph) AI Observer';
+  statusBarItem.show();
 
-  const applyLoggingState = (enabled: boolean, options: { notify?: boolean } = {}) => {
+  const getConfiguration = () => vscode.workspace.getConfiguration('aiObserver');
+  let loggingEnabled = getConfiguration().get<boolean>('enableLogging', true);
+  let chatMonitorRetry: NodeJS.Timeout | undefined;
+
+  const refreshStatusBar = () => {
+    const total = dashboardProvider.getTotalInteractions();
+    const parts: string[] = ['$(graph) AI Observer'];
+    if (!loggingEnabled) {
+      parts.push('paused');
+    } else if (total > 0) {
+      parts.push(`${total}`);
+    }
+    statusBarItem.text = parts.join(' ');
+    statusBarItem.tooltip = loggingEnabled
+      ? total > 0
+        ? `AI Observer · ${total} interactions captured`
+        : 'AI Observer · monitoring Copilot usage'
+      : 'AI Observer · logging disabled';
+  };
+
+  const updateStorageLimit = () => {
+    const limit = getConfiguration().get<number>('storageLimit', 10000) ?? 10000;
+    storage.setMaxInteractions(limit);
+  };
+  updateStorageLimit();
+  refreshStatusBar();
+
+  const ensureChatMonitor = async (): Promise<CopilotChatMonitor | null> => {
+    if (chatMonitor) {
+      return chatMonitor;
+    }
+
+    const chatDir = await resolveCopilotChatSessionsDirectory(context);
+    if (!chatDir) {
+      console.warn('AI Observer could not locate Copilot chat transcripts directory');
+      return null;
+    }
+
+    chatMonitor = new CopilotChatMonitor(chatDir, eventBus);
+    return chatMonitor;
+  };
+
+  const scheduleChatMonitorRetry = () => {
+    if (chatMonitorRetry || chatMonitor || !loggingEnabled) {
+      return;
+    }
+
+    chatMonitorRetry = setTimeout(async () => {
+      chatMonitorRetry = undefined;
+      if (!loggingEnabled || chatMonitor) {
+        return;
+      }
+      const monitor = await ensureChatMonitor();
+      if (monitor) {
+        await monitor.start();
+      } else {
+        scheduleChatMonitorRetry();
+      }
+    }, 10_000);
+  };
+
+  const applyLoggingState = async (enabled: boolean, options: { notify?: boolean } = {}) => {
     loggingEnabled = enabled;
+
     if (copilotAdapter) {
       if (enabled) {
         copilotAdapter.start();
@@ -33,6 +100,24 @@ export function activate(context: vscode.ExtensionContext) {
         copilotAdapter.stop();
       }
     }
+
+    if (!enabled && chatMonitorRetry) {
+      clearTimeout(chatMonitorRetry);
+      chatMonitorRetry = undefined;
+    }
+
+    const monitor = await ensureChatMonitor();
+    if (monitor) {
+      if (enabled) {
+        await monitor.start();
+      } else {
+        monitor.stop();
+      }
+    } else if (enabled) {
+      scheduleChatMonitorRetry();
+    }
+
+    refreshStatusBar();
 
     if (options.notify) {
       const status = enabled ? 'enabled' : 'disabled';
@@ -42,11 +127,14 @@ export function activate(context: vscode.ExtensionContext) {
 
   const configurationListener = vscode.workspace.onDidChangeConfiguration((event) => {
     if (event.affectsConfiguration('aiObserver.enableLogging')) {
-      applyLoggingState(configuration.get<boolean>('enableLogging', true) ?? true);
+      void applyLoggingState(getConfiguration().get<boolean>('enableLogging', true) ?? true);
+    }
+    if (event.affectsConfiguration('aiObserver.storageLimit')) {
+      updateStorageLimit();
     }
   });
 
-  applyLoggingState(loggingEnabled);
+  void applyLoggingState(loggingEnabled);
 
   const interactionListener = async (data: AIInteraction) => {
     if (!loggingEnabled) {
@@ -56,11 +144,23 @@ export function activate(context: vscode.ExtensionContext) {
 
     await storage.saveInteraction(data);
     dashboardProvider.refresh();
+    refreshStatusBar();
   };
   eventBus.on('interaction', interactionListener);
   context.subscriptions.push(
     new vscode.Disposable(() => eventBus.off('interaction', interactionListener)),
     configurationListener,
+    statusBarItem,
+    new vscode.Disposable(() => {
+      if (chatMonitorRetry) {
+        clearTimeout(chatMonitorRetry);
+        chatMonitorRetry = undefined;
+      }
+    }),
+    new vscode.Disposable(() => {
+      chatMonitor?.stop();
+      chatMonitor = null;
+    }),
   );
 
   const testCmd = vscode.commands.registerCommand('ai-observer.test', () => {
@@ -70,11 +170,12 @@ export function activate(context: vscode.ExtensionContext) {
   const toggleLoggingCmd = vscode.commands.registerCommand(
     'ai-observer.toggleLogging',
     async () => {
-      const next = !configuration.get<boolean>('enableLogging', true);
+      const config = getConfiguration();
+      const next = !config.get<boolean>('enableLogging', true);
 
-      await configuration.update('enableLogging', next, vscode.ConfigurationTarget.Global);
+      await config.update('enableLogging', next, vscode.ConfigurationTarget.Global);
 
-      applyLoggingState(next, { notify: true });
+      await applyLoggingState(next, { notify: true });
     },
   );
 
@@ -122,6 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       await storage.clearLogs();
       dashboardProvider.refresh();
+      refreshStatusBar();
       vscode.window.showInformationMessage('AI Observer logs cleared');
     },
   );
@@ -155,6 +257,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       vscode.window.showInformationMessage('Added 5 test interactions');
+      refreshStatusBar();
     },
   );
 
@@ -188,5 +291,134 @@ export function deactivate() {
     copilotAdapter.stop();
     copilotAdapter = null;
   }
+  if (chatMonitor) {
+    chatMonitor.stop();
+    chatMonitor = null;
+  }
   console.log('AI Observer deactivated');
+}
+
+async function resolveCopilotChatSessionsDirectory(
+  context: vscode.ExtensionContext,
+): Promise<string | null> {
+  try {
+    const globalStoragePath = context.globalStorageUri?.fsPath;
+    if (!globalStoragePath) {
+      return null;
+    }
+
+    const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+    if (workspaceFolders.length === 0) {
+      return null;
+    }
+
+    const workspaceRoots = workspaceFolders
+      .map((folder) => folder.uri.fsPath)
+      .filter((fsPath) => fsPath && fsPath.length > 0);
+
+    if (workspaceRoots.length === 0) {
+      return null;
+    }
+
+    const workspaceStorageRoot = path.resolve(globalStoragePath, '..', '..', 'workspaceStorage');
+    try {
+      const rootStats = await fsp.stat(workspaceStorageRoot);
+      if (!rootStats.isDirectory()) {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+
+    const entries = await fsp.readdir(workspaceStorageRoot, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+
+      const candidateRoot = path.join(workspaceStorageRoot, entry.name);
+      const descriptorPath = path.join(candidateRoot, 'workspace.json');
+
+      let descriptor: Record<string, unknown> | undefined;
+      try {
+        const raw = await fsp.readFile(descriptorPath, 'utf8');
+        descriptor = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        continue;
+      }
+
+      const candidateUris = collectWorkspaceUris(descriptor);
+      const candidateFsPaths = candidateUris.map(normalizeWorkspaceUri).filter(Boolean);
+
+      const matchesWorkspace = candidateFsPaths.some((fsPath) =>
+        workspaceRoots.some((root) => samePath(root, fsPath)),
+      );
+
+      if (!matchesWorkspace) {
+        continue;
+      }
+
+      const chatSessionsPath = path.join(candidateRoot, 'chatSessions');
+      await fsp.mkdir(chatSessionsPath, { recursive: true });
+      return chatSessionsPath;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('AI Observer failed to resolve Copilot chat transcripts directory', error);
+    return null;
+  }
+}
+
+function collectWorkspaceUris(descriptor: Record<string, unknown>): string[] {
+  const uris: string[] = [];
+
+  const maybeAdd = (value: unknown) => {
+    if (typeof value === 'string' && value.length > 0) {
+      uris.push(value);
+    }
+  };
+
+  maybeAdd(descriptor['folder']);
+  maybeAdd(descriptor['folderUri']);
+
+  const folders = descriptor['folders'];
+  if (Array.isArray(folders)) {
+    for (const item of folders) {
+      if (typeof item === 'string') {
+        maybeAdd(item);
+      } else if (item && typeof item === 'object') {
+        const record = item as Record<string, unknown>;
+        maybeAdd(record.uri);
+        maybeAdd(record.folderUri);
+      }
+    }
+  }
+
+  return uris;
+}
+
+function normalizeWorkspaceUri(value: string): string {
+  try {
+    const parsed = vscode.Uri.parse(value);
+    if (parsed.scheme === 'file') {
+      return parsed.fsPath;
+    }
+  } catch {
+    // noop
+  }
+  return value;
+}
+
+function samePath(a: string, b: string): boolean {
+  const normalize = (input: string) => {
+    const resolved = path.resolve(input);
+    return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+  };
+
+  const normalizedA = normalize(a);
+  const normalizedB = normalize(b);
+
+  return normalizedA === normalizedB;
 }

@@ -266,7 +266,7 @@ export class CopilotAdapter {
     };
 
     await this.eventBus.emit('interaction', interaction);
-    this.toggleLoggingAutomatically(true);
+    this.ensureLoggingEnabled();
     console.log(`Captured Copilot Chat interaction: ${interaction.id}`);
   }
 
@@ -280,14 +280,11 @@ export class CopilotAdapter {
     };
   }
 
-  public toggleLoggingAutomatically(condition: boolean): void {
+  private ensureLoggingEnabled(): void {
     const config = vscode.workspace.getConfiguration('aiObserver');
-    const enableLogging = config.get<boolean>('enableLogging');
-
-    if (condition && !enableLogging) {
-        vscode.commands.executeCommand('ai-observer.toggleLogging');
-    } else if (!condition && enableLogging) {
-        vscode.commands.executeCommand('ai-observer.toggleLogging');
+    const enabled = config.get<boolean>('enableLogging', true);
+    if (!enabled) {
+      void config.update('enableLogging', true, vscode.ConfigurationTarget.Global);
     }
   }
 }

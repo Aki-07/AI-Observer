@@ -975,7 +975,9 @@
             <i data-lucide="rotate-ccw"></i>
             Reset filters
           </button>
-          <span class="filter-pill" id="filterSummary">Showing entire history</span>
+          <span class="filter-pill" id="filterSummary"
+            >Showing entire history</span
+          >
         </div>
       </section>
 
@@ -1108,7 +1110,9 @@
         <div class="insight-card" data-animate>
           <span class="insight-label">Top prompt theme</span>
           <span class="insight-value insight-prompt" id="insightPrompt">—</span>
-          <span class="activity-time">Most recurring request in this view.</span>
+          <span class="activity-time"
+            >Most recurring request in this view.</span
+          >
         </div>
       </section>
 
@@ -1118,12 +1122,17 @@
             <i data-lucide="quote"></i>
             Top Prompt Themes
           </h3>
-          <span class="glow-pill" id="promptHint">Updated live • Last 30 days</span>
+          <span class="glow-pill" id="promptHint"
+            >Updated live • Last 30 days</span
+          >
         </div>
         <div class="prompt-list" id="promptList">
           <div class="empty-state mini">
             <i data-lucide="align-left"></i>
-            <p>No recurring prompts yet. Start chatting with Copilot to surface themes.</p>
+            <p>
+              No recurring prompts yet. Start chatting with Copilot to surface
+              themes.
+            </p>
           </div>
         </div>
       </section>
@@ -1138,22 +1147,46 @@
         </div>
         <div class="activity-list" id="activityList" aria-live="polite"></div>
       </section>
-
     </main>
 
-        <script nonce="${nonce}">
+    <script nonce="${nonce}">
       const isVsCode = typeof acquireVsCodeApi === "function";
       const vscode = isVsCode ? acquireVsCodeApi() : { postMessage: () => {} };
       const numberFormatter = new Intl.NumberFormat();
-      const percentageFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
-      const durationFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
-      const RANGE_LABELS = { "7d": "Last 7 days", "30d": "Last 30 days", "90d": "Last 90 days", all: "All history" };
-      const SURFACE_LABELS = { all: "All surfaces", chat: "Chat", completion: "Inline completions", inline: "Inline chat" };
-      const ACCEPTANCE_LABELS = { all: "Accepted + Rejected", accepted: "Accepted only", rejected: "Rejected only" };
+      const percentageFormatter = new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 0,
+      });
+      const durationFormatter = new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: 0,
+      });
+      const RANGE_LABELS = {
+        "7d": "Last 7 days",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days",
+        all: "All history",
+      };
+      const SURFACE_LABELS = {
+        all: "All surfaces",
+        chat: "Chat",
+        completion: "Inline completions",
+        inline: "Inline chat",
+      };
+      const ACCEPTANCE_LABELS = {
+        all: "Accepted + Rejected",
+        accepted: "Accepted only",
+        rejected: "Rejected only",
+      };
       const hasGsap = typeof gsap !== "undefined";
 
       const state = {
-        filters: { timeRange: "30d", type: "all", language: "all", model: "all", accepted: "all", search: "" },
+        filters: {
+          timeRange: "30d",
+          type: "all",
+          language: "all",
+          model: "all",
+          accepted: "all",
+          search: "",
+        },
         charts: { timeline: null, languages: null, models: null, hourly: null },
         pendingFilter: null,
         totalInteractions: 0,
@@ -1213,12 +1246,20 @@
       }
 
       function resetFilters() {
-        state.filters = { timeRange: "30d", type: "all", language: "all", model: "all", accepted: "all", search: "" };
+        state.filters = {
+          timeRange: "30d",
+          type: "all",
+          language: "all",
+          model: "all",
+          accepted: "all",
+          search: "",
+        };
         if (controls.range) controls.range.value = state.filters.timeRange;
         if (controls.surface) controls.surface.value = state.filters.type;
         if (controls.language) controls.language.value = state.filters.language;
         if (controls.model) controls.model.value = state.filters.model;
-        if (controls.acceptance) controls.acceptance.value = state.filters.accepted;
+        if (controls.acceptance)
+          controls.acceptance.value = state.filters.accepted;
         if (controls.search) controls.search.value = "";
         updatePromptHint();
         setFilterSummary(state.filteredTotal);
@@ -1242,7 +1283,10 @@
             controls.summary.textContent = "Loading filtered view…";
           }
 
-          vscode.postMessage({ type: "filter", payload: { ...state.filters, requestId: token } });
+          vscode.postMessage({
+            type: "filter",
+            payload: { ...state.filters, requestId: token },
+          });
         };
 
         if (immediate) {
@@ -1257,13 +1301,22 @@
         if (!promptHint) {
           return;
         }
-        const rangeLabel = RANGE_LABELS[state.filters.timeRange] ?? "Custom range";
+        const rangeLabel =
+          RANGE_LABELS[state.filters.timeRange] ?? "Custom range";
         const surfaceLabel = SURFACE_LABELS[state.filters.type] ?? "Surface";
         promptHint.textContent = `${rangeLabel} • ${surfaceLabel}`;
       }
 
       function initCharts() {
-        const palette = ["#58a6ff", "#bc8cff", "#3fb950", "#ffa657", "#f472b6", "#f97316", "#22d3ee"];
+        const palette = [
+          "#58a6ff",
+          "#bc8cff",
+          "#3fb950",
+          "#ffa657",
+          "#f472b6",
+          "#f97316",
+          "#22d3ee",
+        ];
         const timelineCanvas = document.getElementById("timelineChart");
         const languagesCanvas = document.getElementById("languagesChart");
         const modelsCanvas = document.getElementById("modelsChart");
@@ -1284,7 +1337,8 @@
                   pointRadius: 3,
                   pointHoverRadius: 5,
                   pointBackgroundColor: "#0ea5e9",
-                  backgroundColor: (context) => createTimelineGradient(context.chart.ctx),
+                  backgroundColor: (context) =>
+                    createTimelineGradient(context.chart.ctx),
                 },
               ],
             },
@@ -1381,12 +1435,18 @@
           scales: {
             x: {
               grid: { display: false, drawTicks: false },
-              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+              ticks: {
+                color: "#a1a1aa",
+                font: { size: 12, family: "Inter, sans-serif" },
+              },
             },
             y: {
               beginAtZero: true,
               grid: { color: "rgba(255, 255, 255, 0.08)" },
-              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+              ticks: {
+                color: "#a1a1aa",
+                font: { size: 12, family: "Inter, sans-serif" },
+              },
             },
           },
         };
@@ -1409,7 +1469,10 @@
             y: {
               beginAtZero: true,
               grid: { color: "rgba(255, 255, 255, 0.08)" },
-              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+              ticks: {
+                color: "#a1a1aa",
+                font: { size: 12, family: "Inter, sans-serif" },
+              },
             },
           },
         };
@@ -1441,7 +1504,12 @@
         if (!chartArea) {
           return "rgba(88, 166, 255, 0.8)";
         }
-        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        const gradient = ctx.createLinearGradient(
+          0,
+          chartArea.bottom,
+          0,
+          chartArea.top
+        );
         gradient.addColorStop(0, "rgba(88, 166, 255, 0.25)");
         gradient.addColorStop(0.5, "rgba(188, 140, 255, 0.45)");
         gradient.addColorStop(1, "rgba(63, 185, 80, 0.75)");
@@ -1454,26 +1522,42 @@
         }
 
         if (state.charts.timeline) {
-          state.charts.timeline.data.labels = (analytics.interactionsOverTime ?? []).map((entry) => entry.date);
-          state.charts.timeline.data.datasets[0].data = (analytics.interactionsOverTime ?? []).map((entry) => entry.count);
+          state.charts.timeline.data.labels = (
+            analytics.interactionsOverTime ?? []
+          ).map((entry) => entry.date);
+          state.charts.timeline.data.datasets[0].data = (
+            analytics.interactionsOverTime ?? []
+          ).map((entry) => entry.count);
           state.charts.timeline.update("none");
         }
 
         if (state.charts.languages) {
-          state.charts.languages.data.labels = (analytics.topLanguages ?? []).map((entry) => entry.language.toUpperCase());
-          state.charts.languages.data.datasets[0].data = (analytics.topLanguages ?? []).map((entry) => entry.count);
+          state.charts.languages.data.labels = (
+            analytics.topLanguages ?? []
+          ).map((entry) => entry.language.toUpperCase());
+          state.charts.languages.data.datasets[0].data = (
+            analytics.topLanguages ?? []
+          ).map((entry) => entry.count);
           state.charts.languages.update("none");
         }
 
         if (state.charts.models) {
-          state.charts.models.data.labels = (analytics.modelBreakdown ?? []).map((entry) => entry.model);
-          state.charts.models.data.datasets[0].data = (analytics.modelBreakdown ?? []).map((entry) => entry.count);
+          state.charts.models.data.labels = (
+            analytics.modelBreakdown ?? []
+          ).map((entry) => entry.model);
+          state.charts.models.data.datasets[0].data = (
+            analytics.modelBreakdown ?? []
+          ).map((entry) => entry.count);
           state.charts.models.update("none");
         }
 
         if (state.charts.hourly) {
-          state.charts.hourly.data.labels = (analytics.interactionsByHour ?? []).map((entry) => entry.hour);
-          state.charts.hourly.data.datasets[0].data = (analytics.interactionsByHour ?? []).map((entry) => entry.count);
+          state.charts.hourly.data.labels = (
+            analytics.interactionsByHour ?? []
+          ).map((entry) => entry.hour);
+          state.charts.hourly.data.datasets[0].data = (
+            analytics.interactionsByHour ?? []
+          ).map((entry) => entry.count);
           state.charts.hourly.update("none");
         }
       }
@@ -1483,15 +1567,30 @@
           return;
         }
 
-        animateValue("totalInteractions", analytics.totalInteractions ?? 0, (value) => numberFormatter.format(value));
-        animateValue("avgLatency", analytics.averageLatency ?? 0, (value) => `${durationFormatter.format(value)}ms`);
-        animateValue("acceptanceRate", analytics.acceptanceRate ?? 0, (value) => `${percentageFormatter.format(value)}%`);
+        animateValue(
+          "totalInteractions",
+          analytics.totalInteractions ?? 0,
+          (value) => numberFormatter.format(value)
+        );
+        animateValue(
+          "avgLatency",
+          analytics.averageLatency ?? 0,
+          (value) => `${durationFormatter.format(value)}ms`
+        );
+        animateValue(
+          "acceptanceRate",
+          analytics.acceptanceRate ?? 0,
+          (value) => `${percentageFormatter.format(value)}%`
+        );
 
         const topLanguage = analytics?.topLanguages?.[0];
         const topLanguageElement = document.getElementById("topLanguage");
-        const topLanguageCountElement = document.getElementById("topLanguageCount");
+        const topLanguageCountElement =
+          document.getElementById("topLanguageCount");
         if (topLanguageElement) {
-          topLanguageElement.textContent = topLanguage ? topLanguage.language.toUpperCase() : "N/A";
+          topLanguageElement.textContent = topLanguage
+            ? topLanguage.language.toUpperCase()
+            : "N/A";
         }
         if (topLanguageCountElement) {
           topLanguageCountElement.textContent = topLanguage
@@ -1516,7 +1615,7 @@
 
         const busiest = (analytics.interactionsByHour ?? []).reduce(
           (acc, entry) => (entry.count > acc.count ? entry : acc),
-          { hour: 0, count: 0 },
+          { hour: 0, count: 0 }
         );
         if (insightHour) {
           if (busiest.count === 0) {
@@ -1524,7 +1623,10 @@
           } else {
             const sample = new Date();
             sample.setHours(busiest.hour, 0, 0, 0);
-            insightHour.textContent = sample.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+            insightHour.textContent = sample.toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            });
           }
         }
 
@@ -1535,7 +1637,8 @@
 
         if (insightFastest) {
           const fastest = analytics.fastestLatency ?? 0;
-          insightFastest.textContent = fastest > 0 ? `${durationFormatter.format(fastest)}ms` : "—";
+          insightFastest.textContent =
+            fastest > 0 ? `${durationFormatter.format(fastest)}ms` : "—";
         }
 
         if (insightPrompt) {
@@ -1562,15 +1665,19 @@
         }
 
         const markup = prompts
-          .map((entry, index) => `
+          .map(
+            (entry, index) => `
             <div class="prompt-item">
               <div class="prompt-text">
                 <small class="glow-pill">#${index + 1}</small>
                 <span>${escapeHtml(truncate(entry.prompt, 160))}</span>
               </div>
-              <span class="prompt-count">${numberFormatter.format(entry.count)}×</span>
+              <span class="prompt-count">${numberFormatter.format(
+                entry.count
+              )}×</span>
             </div>
-          `)
+          `
+          )
           .join("");
 
         promptList.innerHTML = markup;
@@ -1602,7 +1709,9 @@
 
         const markup = limited
           .map((interaction) => {
-            const badgeClass = interaction.accepted ? "badge-accepted" : "badge-rejected";
+            const badgeClass = interaction.accepted
+              ? "badge-accepted"
+              : "badge-rejected";
             const badgeLabel = interaction.accepted ? "Accepted" : "Rejected";
             const icon = interaction.accepted ? "sparkles" : "x-circle";
             return `
@@ -1610,12 +1719,20 @@
                 <div class="activity-info">
                   <span class="activity-language">
                     <i data-lucide="${icon}"></i>
-                    ${escapeHtml((interaction.language || "unknown").toString())}
+                    ${escapeHtml(
+                      (interaction.language || "unknown").toString()
+                    )}
                   </span>
                   <div class="activity-meta">
-                    <span>${escapeHtml(interaction.modelName || "copilot")}</span>
-                    <span>${durationFormatter.format(interaction.latency ?? 0)}ms</span>
-                    <span class="activity-time">${escapeHtml(formatTimestamp(interaction.timestamp))}</span>
+                    <span>${escapeHtml(
+                      interaction.modelName || "copilot"
+                    )}</span>
+                    <span>${durationFormatter.format(
+                      interaction.latency ?? 0
+                    )}ms</span>
+                    <span class="activity-time">${escapeHtml(
+                      formatTimestamp(interaction.timestamp)
+                    )}</span>
                   </div>
                   <div class="activity-meta">
                     <span>${escapeHtml(interaction.filePath || "—")}</span>
@@ -1634,17 +1751,29 @@
           gsap.fromTo(
             ".activity-item",
             { opacity: 0, y: 10 },
-            { opacity: 1, y: 0, duration: 0.6, stagger: 0.04, ease: "power2.out" },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              stagger: 0.04,
+              ease: "power2.out",
+            }
           );
         } else {
-          list.querySelectorAll(".activity-item").forEach((item) => item.classList.add("animate-ready"));
+          list
+            .querySelectorAll(".activity-item")
+            .forEach((item) => item.classList.add("animate-ready"));
         }
       }
 
       function setFilterSummary(total) {
         state.filteredTotal = total ?? 0;
-        const parts = [`${numberFormatter.format(state.filteredTotal)} interactions`];
-        parts.push(RANGE_LABELS[state.filters.timeRange] ?? state.filters.timeRange);
+        const parts = [
+          `${numberFormatter.format(state.filteredTotal)} interactions`,
+        ];
+        parts.push(
+          RANGE_LABELS[state.filters.timeRange] ?? state.filters.timeRange
+        );
         parts.push(SURFACE_LABELS[state.filters.type] ?? state.filters.type);
         if (state.filters.language !== "all") {
           parts.push(`Language: ${state.filters.language}`);
@@ -1653,7 +1782,9 @@
           parts.push(`Model: ${state.filters.model}`);
         }
         if (state.filters.accepted !== "all") {
-          parts.push(ACCEPTANCE_LABELS[state.filters.accepted] ?? state.filters.accepted);
+          parts.push(
+            ACCEPTANCE_LABELS[state.filters.accepted] ?? state.filters.accepted
+          );
         }
         if (state.filters.search.trim()) {
           parts.push(`“${truncate(state.filters.search.trim(), 24)}”`);
@@ -1667,8 +1798,18 @@
         if (!catalog) {
           return;
         }
-        populateSelect(controls.language, catalog.languages ?? [], "All languages", "language");
-        populateSelect(controls.model, catalog.models ?? [], "All models", "model");
+        populateSelect(
+          controls.language,
+          catalog.languages ?? [],
+          "All languages",
+          "language"
+        );
+        populateSelect(
+          controls.model,
+          catalog.models ?? [],
+          "All models",
+          "model"
+        );
       }
 
       function populateSelect(select, values, placeholder, key) {
@@ -1705,7 +1846,10 @@
       }
 
       function handleFilterResult(message) {
-        if (typeof message?.requestId === "number" && message.requestId !== state.lastRequestToken) {
+        if (
+          typeof message?.requestId === "number" &&
+          message.requestId !== state.lastRequestToken
+        ) {
           return;
         }
 
@@ -1726,10 +1870,18 @@
             gsap.fromTo(
               "[data-animate]",
               { opacity: 0, y: 24 },
-              { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out" },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                stagger: 0.08,
+                ease: "power3.out",
+              }
             );
           } else {
-            document.querySelectorAll("[data-animate]").forEach((element) => element.classList.add("animate-ready"));
+            document
+              .querySelectorAll("[data-animate]")
+              .forEach((element) => element.classList.add("animate-ready"));
           }
         }
       }
@@ -1754,13 +1906,22 @@
         return `${value.slice(0, length - 1)}…`;
       }
 
-      function animateValue(id, target, formatter = (value) => Math.round(value).toString(), duration = 900) {
+      function animateValue(
+        id,
+        target,
+        formatter = (value) => Math.round(value).toString(),
+        duration = 900
+      ) {
         const element = document.getElementById(id);
         if (!element) {
           return;
         }
 
-        const startValue = Number(element.dataset.value ?? element.textContent.replace(/[^0-9.\-]/g, "")) || 0;
+        const startValue =
+          Number(
+            element.dataset.value ??
+              element.textContent.replace(/[^0-9.\-]/g, "")
+          ) || 0;
         const startTime = performance.now();
 
         const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
@@ -1812,9 +1973,15 @@
             { model: "copilot-chat", count: 40 },
           ],
           averageResponseLength: 540,
-          interactionsByHour: Array.from({ length: 24 }).map((_, hour) => ({ hour, count: Math.floor(Math.random() * 8) })),
+          interactionsByHour: Array.from({ length: 24 }).map((_, hour) => ({
+            hour,
+            count: Math.floor(Math.random() * 8),
+          })),
           topPrompts: [
-            { prompt: "Refactor the analytics dashboard for readability", count: 6 },
+            {
+              prompt: "Refactor the analytics dashboard for readability",
+              count: 6,
+            },
             { prompt: "Add Copilot chat telemetry", count: 5 },
             { prompt: "Generate release notes", count: 3 },
           ],
@@ -1834,7 +2001,11 @@
           prompt: "",
         }));
 
-        handleFilterResult({ analytics, interactions, total: interactions.length });
+        handleFilterResult({
+          analytics,
+          interactions,
+          total: interactions.length,
+        });
       }
 
       function refreshData() {
@@ -1856,9 +2027,12 @@
           return;
         }
 
-        const confirmed = typeof window !== "undefined"
-          ? window.confirm("Are you sure you want to clear all Copilot logs? This cannot be undone.")
-          : false;
+        const confirmed =
+          typeof window !== "undefined"
+            ? window.confirm(
+                "Are you sure you want to clear all Copilot logs? This cannot be undone."
+              )
+            : false;
 
         if (confirmed) {
           vscode.postMessage({ type: "clear" });
@@ -1878,7 +2052,10 @@
       if (isVsCode) {
         vscode.postMessage({ type: "refresh" });
       } else {
-        updateFilterOptions({ languages: ["typescript", "python", "javascript", "go"], models: ["copilot", "copilot-chat"] });
+        updateFilterOptions({
+          languages: ["typescript", "python", "javascript", "go"],
+          models: ["copilot", "copilot-chat"],
+        });
         updatePromptHint();
         applyFiltersLocally();
       }

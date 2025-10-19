@@ -28,6 +28,32 @@ export interface AIInteraction {
   lineNumber?: number;
   /** Number of characters contained in the suggestion. */
   characterCount: number;
+  /** Supplemental metadata keyed by surface-specific attributes. */
+  metadata?: Record<string, unknown>;
+
+  // NEW FIELDS — richer telemetry
+  /** Source surface (helps distinguish chat vs completion providers). */
+  source?: 'copilot' | 'copilot-chat' | 'inline' | 'other';
+  /** Identifier for a chat/session if applicable. */
+  sessionId?: string;
+  /** Identifier for a chat thread or conversation group. */
+  threadId?: string;
+  /** Tokens consumed by the request (if available). */
+  tokensUsed?: number;
+  /** Tokens attributable to the prompt (if available). */
+  promptTokens?: number;
+  /** Tokens attributable to the response (if available). */
+  responseTokens?: number;
+  /** Optional model-provided confidence / score in range 0..1. */
+  confidence?: number;
+  /** Version or revision of the assistant/model (if known). */
+  assistantVersion?: string;
+  /** Total elapsed time for end-to-end request (ms) including client-side overhead. */
+  durationMs?: number;
+  /** Size in bytes of the request payload (if measurable). */
+  requestPayloadBytes?: number;
+  /** Size in bytes of the response payload (if measurable). */
+  responsePayloadBytes?: number;
 }
 
 /**
@@ -46,6 +72,16 @@ export interface AnalyticsData {
   topLanguages: Array<{ language: string; count: number }>;
   /** Interactions bucketed by day or other time granularity for trend analysis. */
   interactionsOverTime: Array<{ date: string; count: number }>;
+
+  // NEW AGGREGATES
+  /** Median latency (ms). */
+  medianLatency?: number;
+  /** 95th percentile latency (ms). */
+  p95Latency?: number;
+  /** Interaction counts grouped by model name. */
+  interactionsByModel?: Array<{ modelName: string; count: number }>;
+  /** Average tokens used per interaction (if tokens available). */
+  averageTokensUsed?: number;
 }
 
 /**
