@@ -6,7 +6,10 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'none';
-    img-src https: data:;"
+    img-src https: data:;
+    style-src 'unsafe-inline' https:;
+    script-src 'nonce-${nonce}' https:;
+    font-src https:;"
     />
     <title>AI Observer Dashboard</title>
 
@@ -271,6 +274,119 @@
         font-size: 0.9rem;
       }
 
+      .filters-panel {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 1.25rem;
+        padding: 1.5rem;
+        border-radius: 24px;
+        background: rgba(13, 19, 31, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(24px);
+        align-items: end;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+
+      .filter-group label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-secondary);
+      }
+
+      .filter-group select,
+      .filter-group input[type="search"] {
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(15, 23, 42, 0.65);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: border 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .filter-group select:focus,
+      .filter-group input[type="search"]:focus {
+        outline: none;
+        border-color: rgba(88, 166, 255, 0.6);
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25);
+      }
+
+      .filter-search {
+        grid-column: span 2;
+      }
+
+      .search-wrapper {
+        position: relative;
+      }
+
+      .search-wrapper i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(148, 163, 184, 0.65);
+        width: 18px;
+        height: 18px;
+      }
+
+      .filter-group input[type="search"] {
+        padding-left: 2.4rem;
+      }
+
+      .filter-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        grid-column: 1 / -1;
+      }
+
+      .btn-link {
+        background: none;
+        border: none;
+        color: var(--accent-blue);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        cursor: pointer;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        transition: background 0.25s ease;
+      }
+
+      .btn-link:hover {
+        background: rgba(88, 166, 255, 0.18);
+      }
+
+      .filter-pill {
+        background: rgba(88, 166, 255, 0.14);
+        border: 1px solid rgba(88, 166, 255, 0.4);
+        padding: 0.45rem 1rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--accent-blue);
+      }
+
+      .animate-ready {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+
       .glow-pill {
         display: inline-flex;
         align-items: center;
@@ -484,6 +600,83 @@
       .insight-value {
         font-size: 1.35rem;
         font-weight: 600;
+      }
+
+      .insight-prompt {
+        font-size: 1rem;
+        line-height: 1.4;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .prompt-panel {
+        background: var(--bg-glass);
+        border-radius: 24px;
+        border: var(--glass-border);
+        padding: 1.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.4rem;
+        box-shadow: var(--shadow-sm);
+        backdrop-filter: blur(18px);
+      }
+
+      .prompt-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .prompt-header h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .prompt-list {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .prompt-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.2rem;
+        padding: 1rem 1.1rem;
+        border-radius: 16px;
+        background: rgba(15, 21, 32, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+      }
+
+      .prompt-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        color: var(--text-primary);
+      }
+
+      .prompt-text span {
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+
+      .prompt-count {
+        background: rgba(88, 166, 255, 0.14);
+        border: 1px solid rgba(88, 166, 255, 0.35);
+        color: var(--accent-blue);
+        padding: 0.45rem 0.85rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .empty-state.mini {
+        border-radius: 18px;
+        padding: 2.4rem 1rem;
       }
 
       .activity-section {
@@ -726,6 +919,66 @@
         </div>
       </section>
 
+      <section class="filters-panel" data-animate>
+        <div class="filter-group">
+          <label for="filterRange">Time range</label>
+          <select id="filterRange" aria-label="Time range">
+            <option value="7d">Last 7 days</option>
+            <option value="30d" selected>Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="all">All history</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterSurface">Surface</label>
+          <select id="filterSurface" aria-label="Surface">
+            <option value="all" selected>All surfaces</option>
+            <option value="completion">Inline completions</option>
+            <option value="chat">Chat sessions</option>
+            <option value="inline">Inline chat</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterLanguage">Language</label>
+          <select id="filterLanguage" aria-label="Language">
+            <option value="all" selected>All languages</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterModel">Model</label>
+          <select id="filterModel" aria-label="Model">
+            <option value="all" selected>All models</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filterAcceptance">Outcome</label>
+          <select id="filterAcceptance" aria-label="Outcome">
+            <option value="all" selected>Accepted + Rejected</option>
+            <option value="accepted">Accepted only</option>
+            <option value="rejected">Rejected only</option>
+          </select>
+        </div>
+        <div class="filter-group filter-search">
+          <label for="filterSearch">Search prompts & responses</label>
+          <div class="search-wrapper">
+            <i data-lucide="search"></i>
+            <input
+              id="filterSearch"
+              type="search"
+              placeholder="Find keywords across prompts or answers…"
+              aria-label="Search prompts and responses"
+            />
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="button" class="btn-link" id="filterReset">
+            <i data-lucide="rotate-ccw"></i>
+            Reset filters
+          </button>
+          <span class="filter-pill" id="filterSummary">Showing entire history</span>
+        </div>
+      </section>
+
       <section class="stats-grid">
         <article class="stat-card" data-animate>
           <div class="stat-header">
@@ -806,6 +1059,34 @@
             ></canvas>
           </div>
         </article>
+
+        <article class="chart-card" data-animate>
+          <h3 class="chart-title">
+            <i data-lucide="pie-chart"></i>
+            Model Mix
+          </h3>
+          <div class="chart-container">
+            <canvas
+              id="modelsChart"
+              aria-label="Doughnut chart showing model usage share"
+              role="img"
+            ></canvas>
+          </div>
+        </article>
+
+        <article class="chart-card" data-animate>
+          <h3 class="chart-title">
+            <i data-lucide="clock-8"></i>
+            Hourly Rhythm
+          </h3>
+          <div class="chart-container">
+            <canvas
+              id="hourlyChart"
+              aria-label="Bar chart showing interactions per hour"
+              role="img"
+            ></canvas>
+          </div>
+        </article>
       </section>
 
       <section class="insights-panel">
@@ -815,14 +1096,35 @@
           <span class="activity-time">Spot when Copilot is busiest.</span>
         </div>
         <div class="insight-card" data-animate>
-          <span class="insight-label">Acceptance streak</span>
+          <span class="insight-label">Longest streak</span>
           <span class="insight-value" id="insightStreak">—</span>
-          <span class="activity-time">Track consecutive approvals.</span>
+          <span class="activity-time">Consecutive accepted suggestions.</span>
         </div>
         <div class="insight-card" data-animate>
-          <span class="insight-label">Fastest interaction</span>
+          <span class="insight-label">Fastest response</span>
           <span class="insight-value" id="insightFastest">—</span>
-          <span class="activity-time">Quickest response seen so far.</span>
+          <span class="activity-time">Quickest round-trip captured.</span>
+        </div>
+        <div class="insight-card" data-animate>
+          <span class="insight-label">Top prompt theme</span>
+          <span class="insight-value insight-prompt" id="insightPrompt">—</span>
+          <span class="activity-time">Most recurring request in this view.</span>
+        </div>
+      </section>
+
+      <section class="prompt-panel" data-animate>
+        <div class="prompt-header">
+          <h3>
+            <i data-lucide="quote"></i>
+            Top Prompt Themes
+          </h3>
+          <span class="glow-pill" id="promptHint">Updated live • Last 30 days</span>
+        </div>
+        <div class="prompt-list" id="promptList">
+          <div class="empty-state mini">
+            <i data-lucide="align-left"></i>
+            <p>No recurring prompts yet. Start chatting with Copilot to surface themes.</p>
+          </div>
         </div>
       </section>
 
@@ -837,41 +1139,293 @@
         <div class="activity-list" id="activityList" aria-live="polite"></div>
       </section>
 
-      <section id="analytics">
-        <h2>Analytics Overview</h2>
-        <div id="totalInteractions">
-          Total Interactions: <span id="totalCount">0</span>
-        </div>
-        <div id="interactionsPerLanguage">
-          Interactions Per Language: <span id="languageCounts"></span>
-        </div>
-      </section>
     </main>
 
-    <script nonce="${nonce}">
+        <script nonce="${nonce}">
       const isVsCode = typeof acquireVsCodeApi === "function";
       const vscode = isVsCode ? acquireVsCodeApi() : { postMessage: () => {} };
       const numberFormatter = new Intl.NumberFormat();
-      const percentageFormatter = new Intl.NumberFormat(undefined, {
-        maximumFractionDigits: 0,
-      });
-      const durationFormatter = new Intl.NumberFormat(undefined, {
-        maximumFractionDigits: 0,
-      });
+      const percentageFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+      const durationFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+      const RANGE_LABELS = { "7d": "Last 7 days", "30d": "Last 30 days", "90d": "Last 90 days", all: "All history" };
+      const SURFACE_LABELS = { all: "All surfaces", chat: "Chat", completion: "Inline completions", inline: "Inline chat" };
+      const ACCEPTANCE_LABELS = { all: "Accepted + Rejected", accepted: "Accepted only", rejected: "Rejected only" };
+      const hasGsap = typeof gsap !== "undefined";
 
-      let timelineChart;
-      let languagesChart;
-      let timelineCtx;
-      let languagesCtx;
-      let firstRender = true;
-
-      const defaultInsights = {
-        hour: "—",
-        streak: "—",
-        fastest: "—",
+      const state = {
+        filters: { timeRange: "30d", type: "all", language: "all", model: "all", accepted: "all", search: "" },
+        charts: { timeline: null, languages: null, models: null, hourly: null },
+        pendingFilter: null,
+        totalInteractions: 0,
+        lastRequestToken: 0,
+        filteredTotal: 0,
+        firstRender: true,
       };
 
+      const controls = {
+        range: document.getElementById("filterRange"),
+        surface: document.getElementById("filterSurface"),
+        language: document.getElementById("filterLanguage"),
+        model: document.getElementById("filterModel"),
+        acceptance: document.getElementById("filterAcceptance"),
+        search: document.getElementById("filterSearch"),
+        reset: document.getElementById("filterReset"),
+        summary: document.getElementById("filterSummary"),
+      };
+
+      const promptHint = document.getElementById("promptHint");
+      const promptList = document.getElementById("promptList");
+      const activityCount = document.getElementById("activityCount");
+
       lucide.createIcons();
+
+      Object.entries({
+        timeRange: controls.range,
+        type: controls.surface,
+        language: controls.language,
+        model: controls.model,
+        accepted: controls.acceptance,
+      }).forEach(([key, element]) => {
+        if (!element) {
+          return;
+        }
+        element.addEventListener("change", () => {
+          state.filters[key] = element.value;
+          if (key !== "language" && key !== "model") {
+            updatePromptHint();
+          }
+          triggerFilter();
+        });
+      });
+
+      if (controls.search) {
+        controls.search.addEventListener("input", () => {
+          state.filters.search = controls.search.value;
+          triggerFilter({ debounce: 350 });
+        });
+      }
+
+      if (controls.reset) {
+        controls.reset.addEventListener("click", () => {
+          resetFilters();
+          triggerFilter({ immediate: true });
+        });
+      }
+
+      function resetFilters() {
+        state.filters = { timeRange: "30d", type: "all", language: "all", model: "all", accepted: "all", search: "" };
+        if (controls.range) controls.range.value = state.filters.timeRange;
+        if (controls.surface) controls.surface.value = state.filters.type;
+        if (controls.language) controls.language.value = state.filters.language;
+        if (controls.model) controls.model.value = state.filters.model;
+        if (controls.acceptance) controls.acceptance.value = state.filters.accepted;
+        if (controls.search) controls.search.value = "";
+        updatePromptHint();
+        setFilterSummary(state.filteredTotal);
+      }
+
+      function triggerFilter(options = {}) {
+        const { immediate = false, debounce = 250 } = options;
+        if (state.pendingFilter) {
+          clearTimeout(state.pendingFilter);
+          state.pendingFilter = null;
+        }
+
+        const execute = () => {
+          if (!isVsCode) {
+            applyFiltersLocally();
+            return;
+          }
+
+          const token = ++state.lastRequestToken;
+          if (controls.summary) {
+            controls.summary.textContent = "Loading filtered view…";
+          }
+
+          vscode.postMessage({ type: "filter", payload: { ...state.filters, requestId: token } });
+        };
+
+        if (immediate) {
+          execute();
+          return;
+        }
+
+        state.pendingFilter = setTimeout(execute, debounce);
+      }
+
+      function updatePromptHint() {
+        if (!promptHint) {
+          return;
+        }
+        const rangeLabel = RANGE_LABELS[state.filters.timeRange] ?? "Custom range";
+        const surfaceLabel = SURFACE_LABELS[state.filters.type] ?? "Surface";
+        promptHint.textContent = `${rangeLabel} • ${surfaceLabel}`;
+      }
+
+      function initCharts() {
+        const palette = ["#58a6ff", "#bc8cff", "#3fb950", "#ffa657", "#f472b6", "#f97316", "#22d3ee"];
+        const timelineCanvas = document.getElementById("timelineChart");
+        const languagesCanvas = document.getElementById("languagesChart");
+        const modelsCanvas = document.getElementById("modelsChart");
+        const hourlyCanvas = document.getElementById("hourlyChart");
+
+        if (timelineCanvas) {
+          state.charts.timeline = new Chart(timelineCanvas.getContext("2d"), {
+            type: "line",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  tension: 0.35,
+                  fill: true,
+                  borderColor: "#58a6ff",
+                  borderWidth: 2,
+                  pointRadius: 3,
+                  pointHoverRadius: 5,
+                  pointBackgroundColor: "#0ea5e9",
+                  backgroundColor: (context) => createTimelineGradient(context.chart.ctx),
+                },
+              ],
+            },
+            options: baseLineOptions(),
+          });
+        }
+
+        if (languagesCanvas) {
+          state.charts.languages = new Chart(languagesCanvas.getContext("2d"), {
+            type: "bar",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  borderRadius: 10,
+                  barPercentage: 0.6,
+                  categoryPercentage: 0.7,
+                  backgroundColor: languageGradient,
+                  borderSkipped: false,
+                },
+              ],
+            },
+            options: baseBarOptions(),
+          });
+        }
+
+        if (modelsCanvas) {
+          state.charts.models = new Chart(modelsCanvas.getContext("2d"), {
+            type: "doughnut",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  backgroundColor: palette,
+                  borderWidth: 0,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "60%",
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    color: "#a1a1aa",
+                    font: { size: 12, family: "Inter, sans-serif" },
+                    padding: 18,
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        if (hourlyCanvas) {
+          state.charts.hourly = new Chart(hourlyCanvas.getContext("2d"), {
+            type: "bar",
+            data: {
+              labels: [],
+              datasets: [
+                {
+                  data: [],
+                  backgroundColor: "rgba(88, 166, 255, 0.35)",
+                  borderColor: "rgba(88, 166, 255, 0.9)",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.75,
+                },
+              ],
+            },
+            options: baseBarOptions({ showHour: true }),
+          });
+        }
+
+        window.addEventListener("resize", () => {
+          Object.values(state.charts).forEach((chart) => {
+            if (chart) {
+              chart.update("none");
+            }
+          });
+        });
+      }
+
+      function baseLineOptions() {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: tooltipOptions() },
+          scales: {
+            x: {
+              grid: { display: false, drawTicks: false },
+              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: "rgba(255, 255, 255, 0.08)" },
+              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+            },
+          },
+        };
+      }
+
+      function baseBarOptions({ showHour = false } = {}) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: tooltipOptions() },
+          scales: {
+            x: {
+              grid: { display: false, drawTicks: false },
+              ticks: {
+                color: "#a1a1aa",
+                font: { size: 12, family: "Inter, sans-serif" },
+                callback: showHour ? (value) => `${value}:00` : undefined,
+              },
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: "rgba(255, 255, 255, 0.08)" },
+              ticks: { color: "#a1a1aa", font: { size: 12, family: "Inter, sans-serif" } },
+            },
+          },
+        };
+      }
+
+      function tooltipOptions() {
+        return {
+          backgroundColor: "rgba(9, 15, 25, 0.9)",
+          titleColor: "#f8fafc",
+          bodyColor: "#cbd5f5",
+          borderColor: "rgba(88, 166, 255, 0.35)",
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false,
+        };
+      }
 
       function createTimelineGradient(ctx) {
         const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
@@ -881,146 +1435,303 @@
         return gradient;
       }
 
-      function getLanguageGradient(context) {
+      function languageGradient(context) {
         const { chart } = context;
         const { ctx, chartArea } = chart;
         if (!chartArea) {
           return "rgba(88, 166, 255, 0.8)";
         }
-        const gradient = ctx.createLinearGradient(
-          0,
-          chartArea.bottom,
-          0,
-          chartArea.top
-        );
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
         gradient.addColorStop(0, "rgba(88, 166, 255, 0.25)");
         gradient.addColorStop(0.5, "rgba(188, 140, 255, 0.45)");
         gradient.addColorStop(1, "rgba(63, 185, 80, 0.75)");
         return gradient;
       }
 
-      function initCharts() {
-        timelineCtx = document.getElementById("timelineChart").getContext("2d");
-        languagesCtx = document
-          .getElementById("languagesChart")
-          .getContext("2d");
+      function updateCharts(analytics) {
+        if (!analytics) {
+          return;
+        }
 
-        const gridColor = "rgba(255, 255, 255, 0.08)";
+        if (state.charts.timeline) {
+          state.charts.timeline.data.labels = (analytics.interactionsOverTime ?? []).map((entry) => entry.date);
+          state.charts.timeline.data.datasets[0].data = (analytics.interactionsOverTime ?? []).map((entry) => entry.count);
+          state.charts.timeline.update("none");
+        }
 
-        timelineChart = new Chart(timelineCtx, {
-          type: "line",
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Interactions",
-                data: [],
-                tension: 0.4,
-                fill: true,
-                borderWidth: 3,
-                borderColor: "#58a6ff",
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointBackgroundColor: "#0ea5e9",
-                backgroundColor: (context) =>
-                  createTimelineGradient(context.chart.ctx),
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: "rgba(9, 15, 25, 0.9)",
-                titleColor: "#f8fafc",
-                bodyColor: "#cbd5f5",
-                borderColor: "rgba(88, 166, 255, 0.4)",
-                borderWidth: 1,
-                padding: 12,
-                displayColors: false,
-              },
-            },
-            scales: {
-              x: {
-                grid: { color: gridColor, drawTicks: false },
-                ticks: {
-                  color: "#a1a1aa",
-                  font: { size: 12, family: "Inter, sans-serif" },
-                },
-              },
-              y: {
-                beginAtZero: true,
-                grid: { color: gridColor },
-                ticks: {
-                  color: "#a1a1aa",
-                  font: { size: 12, family: "Inter, sans-serif" },
-                },
-              },
-            },
-          },
-        });
+        if (state.charts.languages) {
+          state.charts.languages.data.labels = (analytics.topLanguages ?? []).map((entry) => entry.language.toUpperCase());
+          state.charts.languages.data.datasets[0].data = (analytics.topLanguages ?? []).map((entry) => entry.count);
+          state.charts.languages.update("none");
+        }
 
-        languagesChart = new Chart(languagesCtx, {
-          type: "bar",
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Usage",
-                data: [],
-                borderRadius: 12,
-                barPercentage: 0.55,
-                categoryPercentage: 0.6,
-                borderSkipped: false,
-                backgroundColor: getLanguageGradient,
-                hoverBackgroundColor: "rgba(188, 140, 255, 0.85)",
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: "rgba(9, 15, 25, 0.9)",
-                titleColor: "#f8fafc",
-                bodyColor: "#cbd5f5",
-                borderColor: "rgba(188, 140, 255, 0.4)",
-                borderWidth: 1,
-                padding: 12,
-                displayColors: false,
-              },
-            },
-            scales: {
-              x: {
-                grid: { display: false, drawTicks: false },
-                ticks: {
-                  color: "#a1a1aa",
-                  font: { size: 12, family: "Inter, sans-serif" },
-                },
-              },
-              y: {
-                beginAtZero: true,
-                grid: { color: gridColor },
-                ticks: {
-                  color: "#a1a1aa",
-                  font: { size: 12, family: "Inter, sans-serif" },
-                },
-              },
-            },
-          },
-        });
+        if (state.charts.models) {
+          state.charts.models.data.labels = (analytics.modelBreakdown ?? []).map((entry) => entry.model);
+          state.charts.models.data.datasets[0].data = (analytics.modelBreakdown ?? []).map((entry) => entry.count);
+          state.charts.models.update("none");
+        }
 
-        window.addEventListener("resize", () => {
-          if (!timelineChart || !languagesChart) {
-            return;
+        if (state.charts.hourly) {
+          state.charts.hourly.data.labels = (analytics.interactionsByHour ?? []).map((entry) => entry.hour);
+          state.charts.hourly.data.datasets[0].data = (analytics.interactionsByHour ?? []).map((entry) => entry.count);
+          state.charts.hourly.update("none");
+        }
+      }
+
+      function updateStats(analytics) {
+        if (!analytics) {
+          return;
+        }
+
+        animateValue("totalInteractions", analytics.totalInteractions ?? 0, (value) => numberFormatter.format(value));
+        animateValue("avgLatency", analytics.averageLatency ?? 0, (value) => `${durationFormatter.format(value)}ms`);
+        animateValue("acceptanceRate", analytics.acceptanceRate ?? 0, (value) => `${percentageFormatter.format(value)}%`);
+
+        const topLanguage = analytics?.topLanguages?.[0];
+        const topLanguageElement = document.getElementById("topLanguage");
+        const topLanguageCountElement = document.getElementById("topLanguageCount");
+        if (topLanguageElement) {
+          topLanguageElement.textContent = topLanguage ? topLanguage.language.toUpperCase() : "N/A";
+        }
+        if (topLanguageCountElement) {
+          topLanguageCountElement.textContent = topLanguage
+            ? `${numberFormatter.format(topLanguage.count)} interactions`
+            : "Dominant usage pattern";
+        }
+      }
+
+      function updateInsights(analytics) {
+        const insightHour = document.getElementById("insightHour");
+        const insightStreak = document.getElementById("insightStreak");
+        const insightFastest = document.getElementById("insightFastest");
+        const insightPrompt = document.getElementById("insightPrompt");
+
+        if (!analytics) {
+          if (insightHour) insightHour.textContent = "—";
+          if (insightStreak) insightStreak.textContent = "—";
+          if (insightFastest) insightFastest.textContent = "—";
+          if (insightPrompt) insightPrompt.textContent = "—";
+          return;
+        }
+
+        const busiest = (analytics.interactionsByHour ?? []).reduce(
+          (acc, entry) => (entry.count > acc.count ? entry : acc),
+          { hour: 0, count: 0 },
+        );
+        if (insightHour) {
+          if (busiest.count === 0) {
+            insightHour.textContent = "—";
+          } else {
+            const sample = new Date();
+            sample.setHours(busiest.hour, 0, 0, 0);
+            insightHour.textContent = sample.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
           }
-          timelineChart.update("none");
-          languagesChart.update("none");
+        }
+
+        if (insightStreak) {
+          const streak = analytics.longestAcceptanceStreak ?? 0;
+          insightStreak.textContent = streak > 0 ? `${streak} accepted` : "—";
+        }
+
+        if (insightFastest) {
+          const fastest = analytics.fastestLatency ?? 0;
+          insightFastest.textContent = fastest > 0 ? `${durationFormatter.format(fastest)}ms` : "—";
+        }
+
+        if (insightPrompt) {
+          const prompt = analytics.topPrompts?.[0]?.prompt;
+          insightPrompt.textContent = prompt ? truncate(prompt, 90) : "—";
+        }
+      }
+
+      function renderPrompts(analytics) {
+        if (!promptList) {
+          return;
+        }
+
+        const prompts = analytics?.topPrompts ?? [];
+        if (prompts.length === 0) {
+          promptList.innerHTML = `
+            <div class="empty-state mini">
+              <i data-lucide="align-left"></i>
+              <p>No recurring prompts yet.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        const markup = prompts
+          .map((entry, index) => `
+            <div class="prompt-item">
+              <div class="prompt-text">
+                <small class="glow-pill">#${index + 1}</small>
+                <span>${escapeHtml(truncate(entry.prompt, 160))}</span>
+              </div>
+              <span class="prompt-count">${numberFormatter.format(entry.count)}×</span>
+            </div>
+          `)
+          .join("");
+
+        promptList.innerHTML = markup;
+        lucide.createIcons();
+      }
+
+      function renderActivity(interactions) {
+        const list = document.getElementById("activityList");
+        if (!list) {
+          return;
+        }
+
+        const limited = (interactions ?? []).slice(0, 40);
+        if (activityCount) {
+          const total = numberFormatter.format(interactions?.length ?? 0);
+          activityCount.textContent = `${total} records`;
+        }
+
+        if (limited.length === 0) {
+          list.innerHTML = `
+            <div class="empty-state">
+              <i data-lucide="radar"></i>
+              <p>No interactions in the current view. Adjust the filters to widen the lens.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        const markup = limited
+          .map((interaction) => {
+            const badgeClass = interaction.accepted ? "badge-accepted" : "badge-rejected";
+            const badgeLabel = interaction.accepted ? "Accepted" : "Rejected";
+            const icon = interaction.accepted ? "sparkles" : "x-circle";
+            return `
+              <div class="activity-item">
+                <div class="activity-info">
+                  <span class="activity-language">
+                    <i data-lucide="${icon}"></i>
+                    ${escapeHtml((interaction.language || "unknown").toString())}
+                  </span>
+                  <div class="activity-meta">
+                    <span>${escapeHtml(interaction.modelName || "copilot")}</span>
+                    <span>${durationFormatter.format(interaction.latency ?? 0)}ms</span>
+                    <span class="activity-time">${escapeHtml(formatTimestamp(interaction.timestamp))}</span>
+                  </div>
+                  <div class="activity-meta">
+                    <span>${escapeHtml(interaction.filePath || "—")}</span>
+                  </div>
+                </div>
+                <span class="activity-badge ${badgeClass}">${badgeLabel}</span>
+              </div>
+            `;
+          })
+          .join("");
+
+        list.innerHTML = markup;
+        lucide.createIcons();
+
+        if (hasGsap) {
+          gsap.fromTo(
+            ".activity-item",
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.6, stagger: 0.04, ease: "power2.out" },
+          );
+        } else {
+          list.querySelectorAll(".activity-item").forEach((item) => item.classList.add("animate-ready"));
+        }
+      }
+
+      function setFilterSummary(total) {
+        state.filteredTotal = total ?? 0;
+        const parts = [`${numberFormatter.format(state.filteredTotal)} interactions`];
+        parts.push(RANGE_LABELS[state.filters.timeRange] ?? state.filters.timeRange);
+        parts.push(SURFACE_LABELS[state.filters.type] ?? state.filters.type);
+        if (state.filters.language !== "all") {
+          parts.push(`Language: ${state.filters.language}`);
+        }
+        if (state.filters.model !== "all") {
+          parts.push(`Model: ${state.filters.model}`);
+        }
+        if (state.filters.accepted !== "all") {
+          parts.push(ACCEPTANCE_LABELS[state.filters.accepted] ?? state.filters.accepted);
+        }
+        if (state.filters.search.trim()) {
+          parts.push(`“${truncate(state.filters.search.trim(), 24)}”`);
+        }
+        if (controls.summary) {
+          controls.summary.textContent = `Showing ${parts.join(" • ")}`;
+        }
+      }
+
+      function updateFilterOptions(catalog) {
+        if (!catalog) {
+          return;
+        }
+        populateSelect(controls.language, catalog.languages ?? [], "All languages", "language");
+        populateSelect(controls.model, catalog.models ?? [], "All models", "model");
+      }
+
+      function populateSelect(select, values, placeholder, key) {
+        if (!select) {
+          return;
+        }
+        const previous = state.filters[key];
+        select.innerHTML = "";
+        const allOption = document.createElement("option");
+        allOption.value = "all";
+        allOption.textContent = placeholder;
+        select.appendChild(allOption);
+
+        values.forEach((value) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          select.appendChild(option);
         });
+
+        if (values.includes(previous)) {
+          select.value = previous;
+        } else {
+          select.value = "all";
+          state.filters[key] = "all";
+        }
+      }
+
+      function handleUpdate(message) {
+        state.totalInteractions = message?.totalInteractions ?? 0;
+        updateFilterOptions(message?.catalog);
+        updatePromptHint();
+        triggerFilter({ immediate: true });
+      }
+
+      function handleFilterResult(message) {
+        if (typeof message?.requestId === "number" && message.requestId !== state.lastRequestToken) {
+          return;
+        }
+
+        const analytics = message?.analytics ?? null;
+        const interactions = message?.interactions ?? [];
+        const total = message?.total ?? interactions.length;
+
+        updateStats(analytics);
+        updateCharts(analytics);
+        updateInsights(analytics);
+        renderPrompts(analytics);
+        renderActivity(interactions);
+        setFilterSummary(total);
+
+        if (state.firstRender) {
+          state.firstRender = false;
+          if (hasGsap) {
+            gsap.fromTo(
+              "[data-animate]",
+              { opacity: 0, y: 24 },
+              { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out" },
+            );
+          } else {
+            document.querySelectorAll("[data-animate]").forEach((element) => element.classList.add("animate-ready"));
+          }
+        }
       }
 
       function escapeHtml(value) {
@@ -1036,27 +1747,23 @@
           .replace(/'/g, "&#39;");
       }
 
-      function easeOutQuad(t) {
-        return 1 - (1 - t) * (1 - t);
+      function truncate(value, length) {
+        if (typeof value !== "string" || value.length <= length) {
+          return value;
+        }
+        return `${value.slice(0, length - 1)}…`;
       }
 
-      function animateValue(
-        id,
-        target,
-        formatter = (value) => Math.round(value).toString(),
-        duration = 900
-      ) {
+      function animateValue(id, target, formatter = (value) => Math.round(value).toString(), duration = 900) {
         const element = document.getElementById(id);
         if (!element) {
           return;
         }
 
-        const startValue =
-          Number(
-            element.dataset.value ??
-              element.textContent.replace(/[^0-9.\-]/g, "")
-          ) || 0;
+        const startValue = Number(element.dataset.value ?? element.textContent.replace(/[^0-9.\-]/g, "")) || 0;
         const startTime = performance.now();
+
+        const easeOutQuad = (t) => 1 - (1 - t) * (1 - t);
 
         function frame(now) {
           const elapsed = now - startTime;
@@ -1075,14 +1782,6 @@
         requestAnimationFrame(frame);
       }
 
-      function updateTrendChip(id, value) {
-        const chip = document.getElementById(id);
-        if (!chip) {
-          return;
-        }
-        chip.textContent = value;
-      }
-
       function formatTimestamp(timestamp) {
         try {
           return new Date(timestamp).toLocaleString();
@@ -1091,231 +1790,58 @@
         }
       }
 
-      function calculateInsights(analytics, interactions) {
-        if (!analytics || interactions.length === 0) {
-          return { ...defaultInsights };
-        }
-
-        const hours = new Array(24).fill(0);
-        let streak = 0;
-        let longestStreak = 0;
-        let fastest = Number.POSITIVE_INFINITY;
-
-        for (const interaction of interactions) {
-          const date = new Date(interaction.timestamp);
-          hours[date.getHours()] += 1;
-
-          if (interaction.accepted) {
-            streak += 1;
-            longestStreak = Math.max(longestStreak, streak);
-          } else {
-            streak = 0;
-          }
-
-          if (interaction.latency && interaction.latency > 0) {
-            fastest = Math.min(fastest, interaction.latency);
-          }
-        }
-
-        const mostActiveHourIndex = hours.indexOf(Math.max(...hours));
-        const hourFormatter = new Intl.DateTimeFormat(undefined, {
-          hour: "numeric",
-          hour12: true,
-        });
-
-        const sampleDate = new Date();
-        sampleDate.setHours(mostActiveHourIndex);
-
-        return {
-          hour:
-            hours[mostActiveHourIndex] === 0
-              ? "—"
-              : hourFormatter.format(sampleDate),
-          streak:
-            longestStreak === 0 ? "—" : `${longestStreak} accepted in a row`,
-          fastest: !Number.isFinite(fastest)
-            ? "—"
-            : `${durationFormatter.format(fastest)}ms`,
+      function applyFiltersLocally() {
+        const now = Date.now();
+        const analytics = {
+          totalInteractions: 120,
+          averageLatency: 320,
+          acceptanceRate: 68,
+          topLanguages: [
+            { language: "typescript", count: 60 },
+            { language: "python", count: 28 },
+            { language: "javascript", count: 20 },
+            { language: "go", count: 8 },
+            { language: "rust", count: 4 },
+          ],
+          interactionsOverTime: Array.from({ length: 10 }).map((_, index) => ({
+            date: `Day ${index + 1}`,
+            count: Math.floor(Math.random() * 20) + 5,
+          })),
+          modelBreakdown: [
+            { model: "copilot", count: 80 },
+            { model: "copilot-chat", count: 40 },
+          ],
+          averageResponseLength: 540,
+          interactionsByHour: Array.from({ length: 24 }).map((_, hour) => ({ hour, count: Math.floor(Math.random() * 8) })),
+          topPrompts: [
+            { prompt: "Refactor the analytics dashboard for readability", count: 6 },
+            { prompt: "Add Copilot chat telemetry", count: 5 },
+            { prompt: "Generate release notes", count: 3 },
+          ],
+          fastestLatency: 84,
+          slowestLatency: 920,
+          longestAcceptanceStreak: 9,
         };
-      }
 
-      function renderActivity(interactions) {
-        const list = document.getElementById("activityList");
-        if (!list) {
-          return;
-        }
+        const interactions = Array.from({ length: 25 }).map((_, index) => ({
+          language: ["typescript", "python", "javascript", "go"][index % 4],
+          modelName: index % 3 === 0 ? "copilot-chat" : "copilot",
+          latency: Math.floor(Math.random() * 400) + 80,
+          accepted: index % 4 !== 0,
+          timestamp: now - index * 3600 * 1000,
+          filePath: `/workspace/src/example-${index}.ts`,
+          response: "",
+          prompt: "",
+        }));
 
-        if (!interactions || interactions.length === 0) {
-          list.innerHTML = `
-          <div class="empty-state">
-            <i data-lucide="radar"></i>
-            <p>No interactions yet. Start coding with Copilot to see insights appear in real-time.</p>
-          </div>
-        `;
-          lucide.createIcons();
-          return;
-        }
-
-        const markup = interactions
-          .map((interaction) => {
-            const badgeClass = interaction.accepted
-              ? "badge-accepted"
-              : "badge-rejected";
-            const badgeLabel = interaction.accepted ? "Accepted" : "Rejected";
-            const icon = interaction.accepted ? "sparkles" : "x-circle";
-            return `
-            <div class="activity-item">
-              <div class="activity-info">
-                <span class="activity-language">
-                  <i data-lucide="${icon}"></i>
-                  ${escapeHtml(interaction.language || "unknown")}
-                </span>
-                <div class="activity-meta">
-                  <span>${escapeHtml(interaction.modelName || "copilot")}</span>
-                  <span>${durationFormatter.format(
-                    interaction.latency ?? 0
-                  )}ms</span>
-                  <span class="activity-time">${escapeHtml(
-                    formatTimestamp(interaction.timestamp)
-                  )}</span>
-                </div>
-                <div class="activity-meta">
-                  <span>${escapeHtml(interaction.filePath || "—")}</span>
-                </div>
-              </div>
-              <span class="activity-badge ${badgeClass}">${badgeLabel}</span>
-            </div>
-          `;
-          })
-          .join("");
-
-        list.innerHTML = markup;
-        lucide.createIcons();
-
-        gsap.fromTo(
-          ".activity-item",
-          { opacity: 0, y: 10 },
-          { opacity: 1, y: 0, duration: 0.6, stagger: 0.04, ease: "power2.out" }
-        );
-      }
-
-      function updateDashboard(message) {
-        const analytics = message?.analytics ?? {};
-        const recentInteractions = message?.recentInteractions ?? [];
-
-        animateValue(
-          "totalInteractions",
-          analytics.totalInteractions ?? 0,
-          (value) => numberFormatter.format(value)
-        );
-        animateValue(
-          "avgLatency",
-          analytics.averageLatency ?? 0,
-          (value) => `${durationFormatter.format(value)}ms`
-        );
-        animateValue(
-          "acceptanceRate",
-          analytics.acceptanceRate ?? 0,
-          (value) => `${percentageFormatter.format(value)}%`
-        );
-
-        const topLanguage = analytics?.topLanguages?.[0];
-        const topLanguageElement = document.getElementById("topLanguage");
-        const topLanguageCountElement =
-          document.getElementById("topLanguageCount");
-        if (topLanguageElement) {
-          topLanguageElement.textContent = topLanguage
-            ? topLanguage.language.toUpperCase()
-            : "N/A";
-        }
-        if (topLanguageCountElement) {
-          topLanguageCountElement.textContent = topLanguage
-            ? `${numberFormatter.format(topLanguage.count)} interactions`
-            : "Dominant usage pattern";
-        }
-
-        updateTrendChip(
-          "interactionTrend",
-          `${analytics.totalInteractions ?? 0} captured`
-        );
-        updateTrendChip(
-          "acceptanceTrend",
-          `${analytics.acceptanceRate ?? 0}% success`
-        );
-        const latencyInsight = document.getElementById("latencyInsight");
-        if (latencyInsight) {
-          latencyInsight.textContent = analytics.averageLatency
-            ? `Median response around ${durationFormatter.format(
-                analytics.averageLatency
-              )}ms`
-            : "Awaiting data";
-        }
-
-        const activityCount = document.getElementById("activityCount");
-        if (activityCount) {
-          activityCount.textContent = `${numberFormatter.format(
-            recentInteractions.length
-          )} records`;
-        }
-
-        if (timelineChart) {
-          timelineChart.data.labels = (
-            analytics.interactionsOverTime ?? []
-          ).map((entry) => entry.date);
-          timelineChart.data.datasets[0].data = (
-            analytics.interactionsOverTime ?? []
-          ).map((entry) => entry.count);
-          timelineChart.update("none");
-        }
-
-        if (languagesChart) {
-          languagesChart.data.labels = (analytics.topLanguages ?? []).map(
-            (entry) => entry.language.toUpperCase()
-          );
-          languagesChart.data.datasets[0].data = (
-            analytics.topLanguages ?? []
-          ).map((entry) => entry.count);
-          languagesChart.update("none");
-        }
-
-        const insights = calculateInsights(
-          analytics,
-          recentInteractions.slice().reverse()
-        );
-        const insightHour = document.getElementById("insightHour");
-        const insightStreak = document.getElementById("insightStreak");
-        const insightFastest = document.getElementById("insightFastest");
-        if (insightHour) {
-          insightHour.textContent = insights.hour;
-        }
-        if (insightStreak) {
-          insightStreak.textContent = insights.streak;
-        }
-        if (insightFastest) {
-          insightFastest.textContent = insights.fastest;
-        }
-
-        renderActivity(recentInteractions);
-
-        if (firstRender) {
-          firstRender = false;
-          gsap.fromTo(
-            "[data-animate]",
-            { opacity: 0, y: 24 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              stagger: 0.08,
-              ease: "power3.out",
-            }
-          );
-        }
+        handleFilterResult({ analytics, interactions, total: interactions.length });
       }
 
       function refreshData() {
         if (isVsCode) {
           vscode.postMessage({ type: "refresh" });
+        } else {
+          applyFiltersLocally();
         }
       }
 
@@ -1330,12 +1856,10 @@
           return;
         }
 
-        const confirmed =
-          typeof window !== "undefined"
-            ? window.confirm(
-                "Are you sure you want to clear all Copilot logs? This cannot be undone."
-              )
-            : false;
+        const confirmed = typeof window !== "undefined"
+          ? window.confirm("Are you sure you want to clear all Copilot logs? This cannot be undone.")
+          : false;
+
         if (confirmed) {
           vscode.postMessage({ type: "clear" });
         }
@@ -1343,7 +1867,9 @@
 
       window.addEventListener("message", (event) => {
         if (event.data?.type === "update") {
-          updateDashboard(event.data.data);
+          handleUpdate(event.data.data);
+        } else if (event.data?.type === "filterResult") {
+          handleFilterResult(event.data.data);
         }
       });
 
@@ -1352,40 +1878,9 @@
       if (isVsCode) {
         vscode.postMessage({ type: "refresh" });
       } else {
-        setTimeout(() => {
-          const mock = {
-            analytics: {
-              totalInteractions: 240,
-              averageLatency: 320,
-              acceptanceRate: 68,
-              topLanguages: [
-                { language: "typescript", count: 120 },
-                { language: "python", count: 56 },
-                { language: "javascript", count: 42 },
-                { language: "go", count: 15 },
-                { language: "rust", count: 7 },
-              ],
-              interactionsOverTime: [
-                { date: "Mon", count: 18 },
-                { date: "Tue", count: 35 },
-                { date: "Wed", count: 42 },
-                { date: "Thu", count: 37 },
-                { date: "Fri", count: 29 },
-                { date: "Sat", count: 22 },
-                { date: "Sun", count: 57 },
-              ],
-            },
-            recentInteractions: Array.from({ length: 10 }).map((_, index) => ({
-              language: ["typescript", "python", "javascript", "go"][index % 4],
-              modelName: "copilot",
-              latency: Math.floor(Math.random() * 400) + 80,
-              accepted: index % 3 !== 0,
-              timestamp: Date.now() - index * 3600 * 1000,
-              filePath: `/workspace/src/example-${index}.ts`,
-            })),
-          };
-          updateDashboard(mock);
-        }, 400);
+        updateFilterOptions({ languages: ["typescript", "python", "javascript", "go"], models: ["copilot", "copilot-chat"] });
+        updatePromptHint();
+        applyFiltersLocally();
       }
     </script>
   </body>
