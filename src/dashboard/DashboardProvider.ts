@@ -14,11 +14,15 @@ export class DashboardProvider {
   private readonly storage: StorageManager;
   private updateInterval: NodeJS.Timeout | undefined;
 
-  constructor(extensionUri: vscode.Uri, storage: StorageManager, eventBus: EventBus) {
+  constructor(
+    extensionUri: vscode.Uri,
+    storage: StorageManager,
+    eventBus: EventBus
+  ) {
     this.extensionUri = extensionUri;
     this.storage = storage;
 
-    eventBus.on('interaction', () => this.refresh());
+    eventBus.on("interaction", () => this.refresh());
   }
 
   /**
@@ -74,7 +78,7 @@ export class DashboardProvider {
   /**
    * Push the latest analytics and interaction data into the webview.
    */
-  private updateData(): void {
+  private async updateData(): Promise<void> {
     if (!this.panel) {
       return;
     }
@@ -83,11 +87,17 @@ export class DashboardProvider {
       const analytics = this.storage.getAnalytics();
       const interactions = this.storage.getInteractions();
 
-      this.panel.webview.postMessage({
+      console.log("Dashboard updating with:", {
+        totalInteractions: interactions.length,
+        analyticsData: analytics,
+      });
+
+      await this.panel.webview.postMessage({
         type: "update",
         data: {
           analytics,
           recentInteractions: interactions.slice(-20).reverse(),
+          totalInteractions: interactions.length,
         },
       });
     } catch (error) {
@@ -134,9 +144,10 @@ export class DashboardProvider {
   /**
    * Trigger a refresh if the dashboard is currently visible.
    */
-  public refresh(): void {
+  public async refresh(): Promise<void> {
+    console.log("Dashboard refresh requested");
     if (this.panel) {
-      this.updateData();
+      await this.updateData();
     }
   }
 

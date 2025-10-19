@@ -5,9 +5,9 @@ import * as fsp from 'fs/promises';
 import { EventBus } from './core/EventBus';
 import { StorageManager } from './core/StorageManager';
 import { CopilotAdapter } from './adapters/CopilotAdapter';
+import { CopilotChatMonitor } from './adapters/CopilotChatMonitor';
 import { AIInteraction } from './types';
 import { DashboardProvider } from './dashboard/DashboardProvider';
-import { CopilotChatMonitor } from './adapters/CoPilotChatMonitor';
 
 let copilotAdapter: CopilotAdapter | null = null;
 let chatMonitor: CopilotChatMonitor | null = null;

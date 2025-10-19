@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { AIInteraction, AnalyticsData, FilterOptions } from '../types';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { AIInteraction, AnalyticsData, FilterOptions } from "../types";
 
 /**
  * Handles persisting interaction telemetry to disk using a JSON document. The
@@ -20,7 +20,7 @@ export class StorageManager {
    * @param storageDir - Directory where the interactions JSON should live.
    */
   constructor(storageDir: string) {
-    this.storagePath = path.join(storageDir, 'interactions.json');
+    this.storagePath = path.join(storageDir, "interactions.json");
     this.interactions = [];
     this.maxInteractions = 10000;
 
@@ -49,12 +49,12 @@ export class StorageManager {
       await fs.access(this.storagePath);
     } catch (error) {
       this.interactions = [];
-      console.log('No existing storage, starting fresh');
+      console.log("No existing storage, starting fresh");
       return;
     }
 
     try {
-      const data = await fs.readFile(this.storagePath, 'utf-8');
+      const data = await fs.readFile(this.storagePath, "utf-8");
       const parsed = JSON.parse(data);
 
       if (Array.isArray(parsed)) {
@@ -66,7 +66,9 @@ export class StorageManager {
         }
       } else {
         this.interactions = [];
-        console.error('Storage file malformed: expected an array of interactions');
+        console.error(
+          "Storage file malformed: expected an array of interactions"
+        );
         return;
       }
 
@@ -75,7 +77,7 @@ export class StorageManager {
       // Any read or parse issue should not crash the extension; instead we log
       // the error and reset to a clean slate so future saves succeed.
       this.interactions = [];
-      console.error('Failed to load interactions from disk', error);
+      console.error("Failed to load interactions from disk", error);
     }
   }
 
@@ -86,9 +88,9 @@ export class StorageManager {
     try {
       await fs.mkdir(path.dirname(this.storagePath), { recursive: true });
       const data = JSON.stringify(this.interactions, null, 2);
-      await fs.writeFile(this.storagePath, data, 'utf-8');
+      await fs.writeFile(this.storagePath, data, "utf-8");
     } catch (error) {
-      console.error('Failed to save interactions', error);
+      console.error("Failed to save interactions", error);
     }
   }
 
@@ -99,6 +101,12 @@ export class StorageManager {
    */
   public async saveInteraction(interaction: AIInteraction): Promise<void> {
     await this.ensureLoaded();
+
+    console.log("Saving interaction:", {
+      id: interaction.id,
+      type: interaction.type,
+      timestamp: interaction.timestamp,
+    });
 
     this.interactions.push(interaction);
 
@@ -114,6 +122,7 @@ export class StorageManager {
    * external mutation.
    */
   public getInteractions(): AIInteraction[] {
+    console.log("Getting interactions, total count:", this.interactions.length);
     return [...this.interactions];
   }
 
@@ -144,22 +153,32 @@ export class StorageManager {
    * Generate aggregate analytics from the stored interactions.
    */
   public getAnalytics(): AnalyticsData {
+    console.log(
+      "Getting analytics, total interactions:",
+      this.interactions.length
+    );
+
     const totalInteractions = this.interactions.length;
 
-    const averageLatency = totalInteractions === 0
-      ? 0
-      : Math.round(
-          this.interactions.reduce((sum, interaction) => sum + interaction.latency, 0) /
-            totalInteractions,
-        );
+    const averageLatency =
+      totalInteractions === 0
+        ? 0
+        : Math.round(
+            this.interactions.reduce(
+              (sum, interaction) => sum + interaction.latency,
+              0
+            ) / totalInteractions
+          );
 
-    const acceptanceRate = totalInteractions === 0
-      ? 0
-      : Math.round(
-          (this.interactions.filter((interaction) => interaction.accepted).length /
-            totalInteractions) *
-            100,
-        );
+    const acceptanceRate =
+      totalInteractions === 0
+        ? 0
+        : Math.round(
+            (this.interactions.filter((interaction) => interaction.accepted)
+              .length /
+              totalInteractions) *
+              100
+          );
 
     const languageCounts = new Map<string, number>();
     for (const interaction of this.interactions) {
@@ -214,11 +233,11 @@ export class StorageManager {
       await this.ensureLoaded();
       await fs.mkdir(path.dirname(filePath), { recursive: true });
 
-      if (ext === '.json') {
+      if (ext === ".json") {
         const data = JSON.stringify(this.interactions, null, 2);
-        await fs.writeFile(filePath, data, 'utf-8');
-      } else if (ext === '.csv') {
-        const header = 'ID,Timestamp,Type,Language,Accepted,Latency,Model\n';
+        await fs.writeFile(filePath, data, "utf-8");
+      } else if (ext === ".csv") {
+        const header = "ID,Timestamp,Type,Language,Accepted,Latency,Model\n";
         const rows = this.interactions
           .map((interaction) =>
             [
@@ -229,15 +248,15 @@ export class StorageManager {
               interaction.accepted,
               interaction.latency,
               interaction.modelName,
-            ].join(','),
+            ].join(",")
           )
-          .join('\n');
-        await fs.writeFile(filePath, `${header}${rows}`, 'utf-8');
+          .join("\n");
+        await fs.writeFile(filePath, `${header}${rows}`, "utf-8");
       } else {
         console.warn(`Unsupported export extension: ${ext}`);
       }
     } catch (error) {
-      console.error('Failed to export logs', error);
+      console.error("Failed to export logs", error);
     }
   }
 

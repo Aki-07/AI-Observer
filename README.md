@@ -7,6 +7,7 @@ AI Observer is a Visual Studio Code extension designed to help you track, analyz
 ## Features
 
 - **Track Copilot Interactions**: Automatically logs prompts and responses from GitHub Copilot.
+- **Intelligent Tracking**: Uses advanced heuristics to accurately detect and capture AI-assisted code completions.
 - **Interactive Dashboard**: A rich dashboard to visualize your interaction history, including language, acceptance rate, and latency.
 - **Enable/Disable on the Fly**: Easily toggle logging on or off with a simple command.
 - **Data Export**: Export your interaction logs to JSON or CSV for custom analysis.
